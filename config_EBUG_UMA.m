@@ -705,8 +705,6 @@ if expParam.sessionNum == 1
         
         % placeholder for familyNames
 %         cfg.stim.(sesName).(phaseName)(phaseCount).familyNames = cfg.stim.familyNames;
-        disp('ccccccc');
-        disp(cfg.stim.(sesName).(phaseName)(phaseCount).familyNames);
         
         % hack
         cfg.stim.(sesName).(phaseName)(phaseCount).refillFamiliesIfEmpty = true;
