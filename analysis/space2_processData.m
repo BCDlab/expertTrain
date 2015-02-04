@@ -1,19 +1,19 @@
-function [results] = space_processData(results,dataroot,subjects,collapsePhases,collapseCategories,separateCategories,onlyCompleteSub,printResults,saveResults,partialCredit,prependDestField,quantileMeasure,quantiles,filenameSuffix)
-% function [results] = space_processData(results,dataroot,subjects,collapsePhases,collapseCategories,separateCategories,onlyCompleteSub,printResults,saveResults,partialCredit,prependDestField,quantileMeasure,quantiles,filenameSuffix)
+function [results] = space2_processData(results,dataroot,subjects,collapsePhases,collapseCategories,separateCategories,onlyCompleteSub,printResults,saveResults,partialCredit,prependDestField,quantileMeasure,quantiles,filenameSuffix)
+% function [results] = space2_processData(results,dataroot,subjects,collapsePhases,collapseCategories,separateCategories,onlyCompleteSub,printResults,saveResults,partialCredit,prependDestField,quantileMeasure,quantiles,filenameSuffix)
 %
 % Processes data into basic measures like accuracy, response time, and d-prime
 %
 % e.g.,
-% [results] = space_processData([],[],[],true,true,true,true,false,true,true,true);
+% [results] = space2_processData([],[],[],true,true,true,true,false,true,true,true);
 %
 % Quantile example (quantileMeasure is a cell array of phase names with
 % a paired measure name).
 %
-% [results] = space_processData([],[],[],true,true,true,true,false,true,true,true,{'expo','','multistudy','','distract_math','','cued_recall','recog_rt'},[.25 .50 .75]);
+% [results] = space2_processData([],[],[],true,true,true,true,false,true,true,true,{'expo','','multistudy','','distract_math','','cued_recall_only','recog_rt'},[.25 .50 .75]);
 %
-% [results] = space_processData([],[],[],true,true,true,true,false,true,true,true,{'expo','','multistudy','','distract_math','','cued_recall','recog_rt'},3);
+% [results] = space2_processData([],[],[],true,true,true,true,false,true,true,true,{'expo','','multistudy','','distract_math','','cued_recall_only','recog_rt'},3);
 %
-% [results] = space_processData([],[],[],true,true,true,true,false,true,true,true,{'expo','','multistudy','','distract_math','','cued_recall','recog_rt'},0.5);
+% [results] = space2_processData([],[],[],true,true,true,true,false,true,true,true,{'expo','','multistudy','','distract_math','','cued_recall_only','recog_rt'},0.5);
 
 plotQhist = false;
 
@@ -130,172 +130,51 @@ if ~exist('saveResults','var') || isempty(saveResults)
   saveResults = true;
 end
 
-% EEG
+% behavioral pilot
 if ~exist('subjects','var') || isempty(subjects)
   subjects = {
-    'SPACE001';
-    'SPACE002';
-    'SPACE003';
-    'SPACE004';
-    'SPACE005';
-    'SPACE006';
-    'SPACE007';
-    %'SPACE008';
-    'SPACE009';
-    'SPACE010';
-    'SPACE011';
-    'SPACE012';
-    'SPACE013';
-    'SPACE014';
-    'SPACE015';
-    'SPACE016';
-    'SPACE017';
-    'SPACE018';
-    'SPACE019';
-    'SPACE020';
-    'SPACE021';
-    'SPACE022';
-    'SPACE027';
-    'SPACE029';
-    'SPACE037';
-    'SPACE039'; % original EEG analyses stopped here
-    'SPACE023';
-    'SPACE024';
-    'SPACE025';
-    'SPACE026';
-    'SPACE028';
-    'SPACE030';
-    'SPACE032';
-    'SPACE034';
-    'SPACE047';
-    'SPACE049';
-    'SPACE036';
+    'SPACE2001';
+    'SPACE2002';
+    'SPACE2003';
+    'SPACE2004';
+    'SPACE2005';
+    'SPACE2006';
+    'SPACE2007';
+    'SPACE2008';
+    'SPACE2009';
+    'SPACE2010';
+    'SPACE2011';
+    'SPACE2012';
+    'SPACE2013';
+    'SPACE2014';
+    'SPACE2015';
+    'SPACE2016';
+    'SPACE2017';
+    'SPACE2018';
+    'SPACE2019';
+    'SPACE2020';
+    'SPACE2021';
+    'SPACE2022';
+    'SPACE2023';
+    'SPACE2024';
+    'SPACE2025';
+    'SPACE2026';
+    'SPACE2027';
+    'SPACE2028';
+    'SPACE2029';
+    'SPACE2029-2';
+    'SPACE2030';
+    'SPACE2031';
+    'SPACE2032';
+    'SPACE2033';
+    'SPACE2034';
+    'SPACE2035';
+    'SPACE2036';
     };
 end
 
 % use a specific subject's files as a template for loading data
-templateSubject = 'SPACE001';
-
-% if ~exist('subjects','var') || isempty(subjects)
-%   subjects = {
-%     'SPACE010';
-%     'SPACE011';
-%     'SPACE012';
-%     'SPACE013';
-%     'SPACE014';
-%     'SPACE015';
-%     'SPACE016';
-%     'SPACE017';
-%     'SPACE018';
-%     'SPACE019';
-%     'SPACE020';
-%     'SPACE021';
-%     'SPACE022';
-%     'SPACE023';
-%     'SPACE024';
-%     'SPACE025';
-%     'SPACE026';
-%     'SPACE027';
-%     'SPACE028';
-%     'SPACE029';
-%     'SPACE030';
-%     'SPACE031';
-%     'SPACE032';
-%     'SPACE033';
-%     'SPACE034';
-%     'SPACE035';
-%     'SPACE036';
-%     'SPACE037';
-%     %'SPACE038'; % responded "J" to almost all cued recall prompts
-%     'SPACE039';
-%     'SPACE040';
-%     'SPACE041';
-%     'SPACE042';
-%     'SPACE043';
-%     'SPACE044';
-%     };
-% end
-% % subject after which to set up results struct fields
-% templateSubject = 'SPACE033';
-
-% if ~exist('subjects','var') || isempty(subjects)
-%   subjects = {
-%     'SPACE010';
-%     'SPACE011';
-%     'SPACE012';
-%     'SPACE013';
-%     'SPACE014';
-%     'SPACE015';
-%     'SPACE016';
-%     'SPACE017';
-%     'SPACE018';
-%     'SPACE019';
-%     'SPACE020';
-%     'SPACE021';
-%     'SPACE022';
-%     'SPACE023';
-%     'SPACE024';
-%     'SPACE025';
-%     'SPACE026';
-%     'SPACE027';
-%     'SPACE028';
-%     'SPACE029';
-%     'SPACE030';
-%     };
-% end
-% % subject after which to set up results struct fields
-% templateSubject = 'SPACE010';
-
-% if ~exist('subjects','var') || isempty(subjects)
-%   subjects = {
-%     'SPACE001';
-%     'SPACE002';
-%     'SPACE003';
-%     'SPACE004';
-%     'SPACE005';
-%     'SPACE006';
-%     'SPACE007';
-%     'SPACE008';
-%     'SPACE009';
-%     'SPACE010';
-%     'SPACE011';
-%     'SPACE012';
-%     'SPACE013';
-%     'SPACE014';
-%     'SPACE015';
-%     'SPACE016';
-%     'SPACE017';
-%     'SPACE018';
-%     'SPACE019';
-%     'SPACE020';
-%     'SPACE021';
-%     'SPACE022';
-%     'SPACE023';
-%     'SPACE024';
-%     'SPACE025';
-%     'SPACE026';
-%     'SPACE027';
-%     'SPACE028';
-%     'SPACE029';
-%     'SPACE030';
-%     'SPACE031';
-%     'SPACE032';
-%     'SPACE033';
-%     'SPACE034';
-%     'SPACE035';
-%     'SPACE036';
-%     'SPACE037';
-%     'SPACE038'; % responded "J" to almost all cued recall prompts
-%     'SPACE039';
-%     'SPACE040';
-%     'SPACE041';
-%     'SPACE042';
-%     'SPACE043';
-%     'SPACE044';
-%     };
-% end
-% % subject after which to set up results struct fields
-% templateSubject = 'SPACE033';
+templateSubject = 'SPACE2001';
 
 % try to determine the experiment name by removing the subject number
 if ~isempty(subjects)
@@ -309,11 +188,14 @@ else
   error('Cannot determine experiment name, no subjects provided.');
 end
 
+beh_dir = 'behavioral_pilot';
+% beh_dir = 'Behavioral';
+
 % find where the data is stored
 if ~exist('dataroot','var') || isempty(dataroot)
-  serverDir = fullfile(filesep,'Volumes','curranlab','Data',expName,'Behavioral','Sessions');
-  serverLocalDir = fullfile(filesep,'Volumes','RAID','curranlab','Data',expName,'Behavioral','Sessions');
-  localDir = fullfile(getenv('HOME'),'data',expName,'Behavioral','Sessions');
+  serverDir = fullfile(filesep,'Volumes','curranlab','Data',expName,beh_dir,'Sessions');
+  serverLocalDir = fullfile(filesep,'Volumes','RAID','curranlab','Data',expName,beh_dir,'Sessions');
+  localDir = fullfile(getenv('HOME'),'data',expName,beh_dir,'Sessions');
   if exist('serverDir','var') && exist(serverDir,'dir')
     dataroot = serverDir;
   elseif exist('serverLocalDir','var') && exist(serverLocalDir,'dir')
@@ -326,52 +208,17 @@ if ~exist('dataroot','var') || isempty(dataroot)
   %saveDir = dataroot;
 end
 
-%% messing around
-
-% r1data = events.oneDay.cued_recall_1.data;
-%
-% % Subjects 1-7 had lures (targ=0) marked as spaced=-1. needs to be false
-% % instead because logical(-1)=1.
-% lureInd = [r1data.targ] == 0;
-% for i = 1:length(lureInd)
-%   if lureInd(i)
-%     r1data(i).spaced = false;
-%   end
-% end
-%
-% massed = r1data(~ismember({r1data.recog_resp},{'NO_RESPONSE', 'none'}) & [r1data.targ] == true & [r1data.spaced] == false & [r1data.lag] == 0);
-% spaced = r1data(~ismember({r1data.recog_resp},{'NO_RESPONSE', 'none'}) & [r1data.targ] == true & [r1data.spaced] == true & [r1data.lag] > 0);
-% onePres = r1data(~ismember({r1data.recog_resp},{'NO_RESPONSE', 'none'}) & [r1data.targ] == true & [r1data.spaced] == false & [r1data.lag] == -1);
-% newStims = r1data(~ismember({r1data.recog_resp},{'NO_RESPONSE', 'none'}) & [r1data.targ] == false);
-%
-% fprintf('\n\n');
-% fprintf('Spaced recog acc (%d/%d) = %.3f\n',sum([spaced.recog_acc]),length(spaced),mean([spaced.recog_acc]));
-% fprintf('Massed recog acc (%d/%d) = %.3f\n',sum([massed.recog_acc]),length(massed),mean([massed.recog_acc]));
-% fprintf('onePres recog acc (%d/%d) = %.3f\n',sum([onePres.recog_acc]),length(onePres),mean([onePres.recog_acc]));
-% fprintf('newStims recog acc (%d/%d) = %.3f\n',sum([newStims.recog_acc]),length(newStims),mean([newStims.recog_acc]));
-%
-% %fprintf('\n');
-% %fprintf('Spaced new acc %.3f\n',mean([spaced.new_acc]));
-% %fprintf('Massed new acc %.3f\n',mean([massed.new_acc]));
-% %fprintf('onePres new acc %.3f\n',mean([onePres.new_acc]));
-% %fprintf('newStims new acc %.3f\n',mean([newStims.new_acc]));
-%
-% fprintf('\n');
-% fprintf('Spaced recall acc (%d/%d) = %.3f\n',sum([spaced.recall_spellCorr] == 1),length(spaced),mean([spaced.recall_spellCorr] == 1));
-% fprintf('Massed recall acc (%d/%d) = %.3f\n',sum([massed.recall_spellCorr] == 1),length(massed),mean([massed.recall_spellCorr] == 1));
-% fprintf('onePres recall acc (%d/%d) = %.3f\n',sum([onePres.recall_spellCorr] == 1),length(onePres),mean([onePres.recall_spellCorr] == 1));
-% %fprintf('newStims recall acc %.3f\n',mean([newStims.recall_spellCorr] == 1));
-
 %% some constants
 
 %nBlocks = 3;
 
 % lagConds = [8, 0, -1];
 
-mainFields_expo = {'rating'};
-dataFields_expo = {{'resp', 'rt'}};
+% mainFields_expo = {'rating'};
+% dataFields_expo = {{'resp', 'rt'}};
 
-mainFields = {'recog','recall'};
+% mainFields = {'recog','recall'};
+mainFields = {'recall'};
 dataFields = {...
   {'nTrial','nTarg','nLure','nHit','nMiss','nCR','nFA','hr','mr','crr','far','dp','rt','rt_hit','rt_miss','rt_cr','rt_fa','c','Pr','Br'} ...
   {'nTrial','nTarg','nHit','nMiss','hr','mr','rt','rt_hit','rt_miss'} ...
@@ -409,6 +256,11 @@ if isempty(results)
     load(eventsFile,'events');
   else
     error('initialization events file does not exist: %s',eventsFile);
+  end
+  
+  % hack
+  if strcmp(beh_dir,'behavioral_pilot')
+    expParam.sesTypes = {'day1'};
   end
   
   for sesNum = 1:length(expParam.sesTypes)
@@ -455,36 +307,36 @@ if isempty(results)
           end
           
           switch phaseName
-            case {'expo'}
-              respEvents = events.oneDay.expo.data(strcmp({events.oneDay.expo.data.type},'EXPO_RESP'));
+%             case {'expo'}
+%               respEvents = events.oneDay.expo.data(strcmp({events.oneDay.expo.data.type},'EXPO_RESP'));
+%               
+%               if collapseCategories
+%                 for mf = 1:length(mainFields_expo)
+%                   mField = mainFields_expo{mf};
+%                   for df = 1:length(dataFields_expo{mf})
+%                     dField = dataFields_expo{mf}{df};
+%                     
+%                     results.(sesName).(fn).(mField).(sprintf('%s_%s',mField,dField)) = nan(length(subjects),nDivisions);
+%                   end
+%                 end
+%               end
+%               
+%               % image categories
+%               i_catStrs = unique({respEvents.i_catStr},'sorted');
+%               if length(i_catStrs) > 1 && separateCategories
+%                 for im = 1:length(i_catStrs)
+%                   for mf = 1:length(mainFields_expo)
+%                     mField = mainFields_expo{mf};
+%                     for df = 1:length(dataFields_expo{mf})
+%                       dField = dataFields_expo{mf}{df};
+%                       
+%                       results.(sesName).(fn).(i_catStrs{im}).(mField).(sprintf('%s_%s',mField,dField)) = nan(length(subjects),nDivisions);
+%                     end
+%                   end
+%                 end
+%               end
               
-              if collapseCategories
-                for mf = 1:length(mainFields_expo)
-                  mField = mainFields_expo{mf};
-                  for df = 1:length(dataFields_expo{mf})
-                    dField = dataFields_expo{mf}{df};
-                    
-                    results.(sesName).(fn).(mField).(sprintf('%s_%s',mField,dField)) = nan(length(subjects),nDivisions);
-                  end
-                end
-              end
-              
-              % image categories
-              i_catStrs = unique({respEvents.i_catStr},'sorted');
-              if length(i_catStrs) > 1 && separateCategories
-                for im = 1:length(i_catStrs)
-                  for mf = 1:length(mainFields_expo)
-                    mField = mainFields_expo{mf};
-                    for df = 1:length(dataFields_expo{mf})
-                      dField = dataFields_expo{mf}{df};
-                      
-                      results.(sesName).(fn).(i_catStrs{im}).(mField).(sprintf('%s_%s',mField,dField)) = nan(length(subjects),nDivisions);
-                    end
-                  end
-                end
-              end
-              
-            case {'cued_recall'}
+            case {'cued_recall_only'}
               targEvents = events.(sesName).(fn).data([events.(sesName).(fn).data.targ]);
               %lureEvents = events.(sesName).(fn).data(~[events.(sesName).(fn).data.targ]);
               
@@ -494,8 +346,8 @@ if isempty(results)
                 % choose the training condition
                 if length(lagConds(lc)) == 1
                   if lagConds(lc) > 0
-                    %lagStr = sprintf('lag%d',lagConds(lc));
-                    lagStr = 'spaced';
+                    lagStr = sprintf('lag%d',lagConds(lc));
+                    %lagStr = 'spaced';
                   elseif lagConds(lc) == 0
                     lagStr = 'massed';
                   elseif lagConds(lc) == -1
@@ -588,6 +440,11 @@ if isempty(results)
         fprintf('Done.\n');
       else
         error('experiment parameter file does not exist: %s',expParamFile);
+      end
+      
+      % hack
+      if strcmp(beh_dir,'behavioral_pilot')
+        expParam.sesTypes = {'day1'};
       end
       
       for sesNum = 1:length(expParam.sesTypes)
@@ -725,24 +582,25 @@ if isempty(results)
                         end
                       end
                       
-                    case {'cued_recall'}
+                    case {'cued_recall_only'}
                       % how many lag conditions occurred for targets
                       % (during study)?
                       lagConds = unique([thisPhaseEv([thisPhaseEv.targ]).lag],'sorted');
                       
                       % exclude missed responses ({'NO_RESPONSE', 'none'})
-                      thisPhaseEv = thisPhaseEv(~ismember({thisPhaseEv.recog_resp},{'NO_RESPONSE', 'none'}));
+%                       thisPhaseEv = thisPhaseEv(~ismember({thisPhaseEv.recog_resp},{'NO_RESPONSE', 'none'}));
                       
                       if sum(lagConds > 0) > 1
-                        error('%s does not yet support multiple lag conditions!',mfilename);
+%                         error('%s does not yet support multiple lag conditions!',mfilename);
+                        fprintf('%s: testing out multiple lag conditions!\n',mfilename);
                       end
                       
                       for lc = 1:length(lagConds)
                         % targ events are either massed or spaced, depending
                         % on the lag condition
-                        targEvents = thisPhaseEv([thisPhaseEv.targ] & ismember({thisPhaseEv.type},'RECOGTEST_STIM') & ismember([thisPhaseEv.lag],lagConds(lc)));
+                        targEvents = thisPhaseEv([thisPhaseEv.targ] & ismember({thisPhaseEv.type},'TEST_STIM') & ismember([thisPhaseEv.lag],lagConds(lc)));
                         % lure events don't have lag conditions
-                        lureEvents = thisPhaseEv(~[thisPhaseEv.targ] & ismember({thisPhaseEv.type},'RECOGTEST_STIM'));
+                        lureEvents = thisPhaseEv(~[thisPhaseEv.targ] & ismember({thisPhaseEv.type},'TEST_STIM'));
                         
                         % choose the training condition
                         if length(lagConds(lc)) == 1
@@ -750,8 +608,8 @@ if isempty(results)
                             if printResults
                               fprintf('*** Spaced (lag %d) ***\n',lagConds(lc));
                             end
-                            %lagStr = sprintf('lag%d',lagConds(lc));
-                            lagStr = 'spaced';
+                            lagStr = sprintf('lag%d',lagConds(lc));
+                            %lagStr = 'spaced';
                           elseif lagConds(lc) == 0
                             if printResults
                               fprintf('*** Massed ***\n');
@@ -885,9 +743,9 @@ if isempty(results)
                               
                               % targ events are either massed or spaced, depending
                               % on the lag condition
-                              targEvents = thisPhaseEv([thisPhaseEv.targ] & ismember({thisPhaseEv.type},'RECOGTEST_STIM') & ismember([thisPhaseEv.lag],lagConds(lc)) & strcmpi({thisPhaseEv.i_catStr},i_catStrs{im}));
+                              targEvents = thisPhaseEv([thisPhaseEv.targ] & ismember({thisPhaseEv.type},'TEST_STIM') & ismember([thisPhaseEv.lag],lagConds(lc)) & strcmpi({thisPhaseEv.i_catStr},i_catStrs{im}));
                               % lure events don't have lag conditions
-                              lureEvents = thisPhaseEv(~[thisPhaseEv.targ] & ismember({thisPhaseEv.type},'RECOGTEST_STIM') & strcmpi({thisPhaseEv.i_catStr},i_catStrs{im}));
+                              lureEvents = thisPhaseEv(~[thisPhaseEv.targ] & ismember({thisPhaseEv.type},'TEST_STIM') & strcmpi({thisPhaseEv.i_catStr},i_catStrs{im}));
                               
                               %                             % filter the events that we want
                               %                             theseEvents = targEvents(...
@@ -1112,6 +970,11 @@ else
   error('events file does not exist: %s',eventsFile);
 end
 
+% hack
+if ~isempty(strfind(dataroot,'behavioral_pilot'))
+  expParam.sesTypes = {'day1'};
+end
+
 fid = fopen(textFileName,'wt');
 
 for sesNum = 1:length(expParam.sesTypes)
@@ -1174,7 +1037,7 @@ for sesNum = 1:length(expParam.sesTypes)
           end
           
           switch phaseName
-            case {'cued_recall'}
+            case {'cued_recall_only'}
               targEvents = events.(sesName).(fn).data([events.(sesName).(fn).data.targ]);
               lagConds = unique([targEvents.lag],'sorted');
               
@@ -1185,8 +1048,8 @@ for sesNum = 1:length(expParam.sesTypes)
                 % choose the training condition
                 if length(lagConds(lc)) == 1
                   if lagConds(lc) > 0
-                    %lagStr = sprintf('lag%d',lagConds(lc));
-                    lagStr = 'spaced';
+                    lagStr = sprintf('lag%d',lagConds(lc));
+                    %lagStr = 'spaced';
                   elseif lagConds(lc) == 0
                     lagStr = 'massed';
                   elseif lagConds(lc) == -1

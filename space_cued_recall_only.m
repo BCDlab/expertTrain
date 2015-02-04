@@ -1,5 +1,5 @@
-function [cfg,expParam] = space_cued_recall(w,cfg,expParam,logFile,sesName,phaseName,phaseCount)
-% function [cfg,expParam] = space_cued_recall(w,cfg,expParam,logFile,sesName,phaseName,phaseCount)
+function [cfg,expParam] = space_cued_recall_only(w,cfg,expParam,logFile,sesName,phaseName,phaseCount)
+% function [cfg,expParam] = space_cued_recall_only(w,cfg,expParam,logFile,sesName,phaseName,phaseCount)
 %
 % Description:
 %  This function runs the cued recall test task.
@@ -46,7 +46,7 @@ startTime = sprintf('%.2d:%.2d:%.2d',startTime(4),startTime(5),startTime(6));
 %% determine the starting trial, useful for resuming
 
 % set up progress file, to resume this phase in case of a crash, etc.
-phaseProgressFile = fullfile(cfg.files.sesSaveDir,sprintf('phaseProgress_%s_%s_cr_%d.mat',sesName,phaseName,phaseCount));
+phaseProgressFile = fullfile(cfg.files.sesSaveDir,sprintf('phaseProgress_%s_%s_cro_%d.mat',sesName,phaseName,phaseCount));
 if exist(phaseProgressFile,'file')
   load(phaseProgressFile);
 else
@@ -69,7 +69,7 @@ end
 
 %% start the log file for this phase
 
-phaseLogFile = fullfile(cfg.files.sesSaveDir,sprintf('phaseLog_%s_%s_cr_%d.txt',sesName,phaseName,phaseCount));
+phaseLogFile = fullfile(cfg.files.sesSaveDir,sprintf('phaseLog_%s_%s_cro_%d.txt',sesName,phaseName,phaseCount));
 phLFile = fopen(phaseLogFile,'at');
 
 %% record the starting date and time for this phase
@@ -117,25 +117,25 @@ if ~isfield(cfg.stim,'preloadImages')
   cfg.stim.preloadImages = false;
 end
 
-% read the proper old new response key image
-oldNewKeyImg = imread(cfg.files.recogTestOldNewRespKeyImg);
-oldNewKeyImgHeight = size(oldNewKeyImg,1) * cfg.files.respKeyImgScale;
-oldNewKeyImgWidth = size(oldNewKeyImg,2) * cfg.files.respKeyImgScale;
-oldNewKeyImg = Screen('MakeTexture',w,oldNewKeyImg);
-% read the proper sure maybe response key image
-sureMaybeKeyImg = imread(cfg.files.recogTestSureMaybeRespKeyImg);
-sureMaybeKeyImgHeight = size(sureMaybeKeyImg,1) * cfg.files.respKeyImgScale;
-sureMaybeKeyImgWidth = size(sureMaybeKeyImg,2) * cfg.files.respKeyImgScale;
-sureMaybeKeyImg = Screen('MakeTexture',w,sureMaybeKeyImg);
-
-% set the old new response key image rectangle
-oldNewKeyImgRect = SetRect(0, 0, oldNewKeyImgWidth, oldNewKeyImgHeight);
-oldNewKeyImgRect = CenterRect(oldNewKeyImgRect, cfg.screen.wRect);
-oldNewKeyImgRect = AlignRect(oldNewKeyImgRect, cfg.screen.wRect, 'bottom', 'bottom');
-% set the sure maybe response key image rectangle
-sureMaybeKeyImgRect = SetRect(0, 0, sureMaybeKeyImgWidth, sureMaybeKeyImgHeight);
-sureMaybeKeyImgRect = CenterRect(sureMaybeKeyImgRect, cfg.screen.wRect);
-sureMaybeKeyImgRect = AlignRect(sureMaybeKeyImgRect, cfg.screen.wRect, 'bottom', 'bottom');
+% % read the proper old new response key image
+% oldNewKeyImg = imread(cfg.files.recogTestOldNewRespKeyImg);
+% oldNewKeyImgHeight = size(oldNewKeyImg,1) * cfg.files.respKeyImgScale;
+% oldNewKeyImgWidth = size(oldNewKeyImg,2) * cfg.files.respKeyImgScale;
+% oldNewKeyImg = Screen('MakeTexture',w,oldNewKeyImg);
+% % read the proper sure maybe response key image
+% sureMaybeKeyImg = imread(cfg.files.recogTestSureMaybeRespKeyImg);
+% sureMaybeKeyImgHeight = size(sureMaybeKeyImg,1) * cfg.files.respKeyImgScale;
+% sureMaybeKeyImgWidth = size(sureMaybeKeyImg,2) * cfg.files.respKeyImgScale;
+% sureMaybeKeyImg = Screen('MakeTexture',w,sureMaybeKeyImg);
+% 
+% % set the old new response key image rectangle
+% oldNewKeyImgRect = SetRect(0, 0, oldNewKeyImgWidth, oldNewKeyImgHeight);
+% oldNewKeyImgRect = CenterRect(oldNewKeyImgRect, cfg.screen.wRect);
+% oldNewKeyImgRect = AlignRect(oldNewKeyImgRect, cfg.screen.wRect, 'bottom', 'bottom');
+% % set the sure maybe response key image rectangle
+% sureMaybeKeyImgRect = SetRect(0, 0, sureMaybeKeyImgWidth, sureMaybeKeyImgHeight);
+% sureMaybeKeyImgRect = CenterRect(sureMaybeKeyImgRect, cfg.screen.wRect);
+% sureMaybeKeyImgRect = AlignRect(sureMaybeKeyImgRect, cfg.screen.wRect, 'bottom', 'bottom');
 
 % default is to not print out trial details
 if ~isfield(cfg.text,'printTrialInfo') || isempty(cfg.text.printTrialInfo)
@@ -163,10 +163,10 @@ if phaseCfg.playSound
   end
 end
 
-% are they allowed to respond while the stimulus is on the screen?
-if ~isfield(phaseCfg,'respDuringStim')
-  phaseCfg.respDuringStim = false;
-end
+% % are they allowed to respond while the stimulus is on the screen?
+% if ~isfield(phaseCfg,'respDuringStim')
+%   phaseCfg.respDuringStim = false;
+% end
 
 % default is to show fixation during ISI
 if ~isfield(phaseCfg,'fixDuringISI')
@@ -382,10 +382,10 @@ if ~expParam.photoCellTest
   WaitSecs(1.000);
 end
 
-%% Run recognition and cued recall test
+%% Run cued recall test
 
-% only check these keys
-RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
+% % only check these keys
+% RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
 
 % start the blink break timer
 if phaseCfg.isExp && phaseCfg.secUntilBlinkBreak > 0
@@ -403,7 +403,7 @@ for i = trialNum:length(testStims_img)
     fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\n',thisGetSecs,expParam.subject,sesName,phaseName,phaseCount,phaseCfg.isExp,'IMPEDANCE_END');
     fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\n',thisGetSecs,expParam.subject,sesName,phaseName,phaseCount,phaseCfg.isExp,'IMPEDANCE_END');
     
-    RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
+%     RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
     
     % show preparation text
     DrawFormattedText(w, 'Get ready...', 'center', 'center', cfg.text.fixationColor, cfg.text.instructCharWidth);
@@ -442,13 +442,13 @@ for i = trialNum:length(testStims_img)
     end
     pauseMsg = sprintf('%sReady for trial %d of %d.\nPress any key to continue.', pauseMsg, i, length(testStims_img));
     
-    if phaseCfg.showRespInBreak
-      % draw response prompt, one on top of the other
-      Screen('DrawTexture', w, sureMaybeKeyImg, [], sureMaybeKeyImgRect);
-      
-      %Screen('DrawTexture', w, oldNewKeyImg, [], oldNewKeyImgRect);
-      Screen('DrawTexture', w, oldNewKeyImg, [], AdjoinRect(oldNewKeyImgRect,sureMaybeKeyImgRect,RectTop));
-    end
+%     if phaseCfg.showRespInBreak
+%       % draw response prompt, one on top of the other
+%       Screen('DrawTexture', w, sureMaybeKeyImg, [], sureMaybeKeyImgRect);
+%       
+%       %Screen('DrawTexture', w, oldNewKeyImg, [], oldNewKeyImgRect);
+%       Screen('DrawTexture', w, oldNewKeyImg, [], AdjoinRect(oldNewKeyImgRect,sureMaybeKeyImgRect,RectTop));
+%     end
     
     % just draw straight into the main window since we don't need speed here
     DrawFormattedText(w, pauseMsg, 'center', 'center', cfg.text.instructColor, cfg.text.instructCharWidth);
@@ -463,7 +463,7 @@ for i = trialNum:length(testStims_img)
     fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\n',thisGetSecs,expParam.subject,sesName,phaseName,phaseCount,phaseCfg.isExp,'BLINK_END');
     fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\n',thisGetSecs,expParam.subject,sesName,phaseName,phaseCount,phaseCfg.isExp,'BLINK_END');
     % only check these keys
-    RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
+%     RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
     
     % show preparation text
     DrawFormattedText(w, 'Get ready...', 'center', 'center', cfg.text.fixationColor, cfg.text.instructCharWidth);
@@ -517,21 +517,21 @@ for i = trialNum:length(testStims_img)
   test_preStimFixOn = nan;
   %test_imgOn = nan;
   % recognition
-  keyIsDown_recog = false;
-  recogEndRT = nan;
-  recogRespPromptOn = nan;
-  recogAcc = false;
-  recogRespKey = 'NO_RESPONSE_KEY';
-  recogResp = 'NO_RESPONSE';
+  % keyIsDown_recog = false;
+  %recogEndRT = nan;
+  %recogRespPromptOn = nan;
+  %recogAcc = false;
+  %recogRespKey = 'NO_RESPONSE_KEY';
+  %recogResp = 'NO_RESPONSE';
   %recogResp_rt = int32(-1);
-  % new - sure/maybe response
-  keyIsDown_new = false;
-  newEndRT = nan;
-  newRespPromptOn = nan;
-  newAcc = false;
-  newRespKey = 'NO_RESPONSE_KEY';
-  newResp = 'NO_RESPONSE';
-  newResp_rt = int32(-1);
+  % % new - sure/maybe response
+  % keyIsDown_new = false;
+  % newEndRT = nan;
+  % newRespPromptOn = nan;
+  % newAcc = false;
+  % newRespKey = 'NO_RESPONSE_KEY';
+  % newResp = 'NO_RESPONSE';
+  % newResp_rt = int32(-1);
   % old - recall response
   madeRecallResp = false;
   recallEndRT = nan;
@@ -627,187 +627,187 @@ for i = trialNum:length(testStims_img)
   
   % while loop to show stimulus until "duration" seconds elapsed.
   while (GetSecs - test_imgOnset) <= phaseCfg.cr_cueStimOnly
-    % check for too-fast response
-    if ~phaseCfg.respDuringStim
-      [keyIsDown_recog] = KbCheck;
-      % if they press a key too early, tell them they responded too fast
-      if keyIsDown_recog
-        % draw the stimulus
-        Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
-        if phaseCfg.fixDuringStim
-          % and fixation on top of it
-          Screen('TextSize', w, cfg.text.fixSize);
-          Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
-          %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
-        end
-        % and the "too fast" text
-        Screen('TextSize', w, cfg.text.instructTextSize);
-        DrawFormattedText(w,cfg.text.tooFastText,'center',errorTextY,cfg.text.errorTextColor, cfg.text.instructCharWidth);
-        % photocell rect with stim
-        if cfg.stim.photoCell
-          Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
-        end
-        Screen('Flip', w);
-        
-        keyIsDown_recog = 0;
-        break
-      end
-    else
-      [keyIsDown_recog, recogEndRT, keyCode] = KbCheck;
-      % if they push more than one key, don't accept it
-      if keyIsDown_recog && sum(keyCode) == 1
-        % wait for key to be released
-        while KbCheck(-1)
-          WaitSecs(0.0001);
-          
-          % % proceed if time is up, regardless of whether key is held
-          % if (GetSecs - recogRT) > phaseCfg.cr_recog_response
-          %   break
-          % end
-        end
-        % if cfg.text.printTrialInfo
-        %   fprintf('"%s" typed at time %.3f seconds\n', KbName(keyCode), endRT - recogRT);
-        % end
-        if (keyCode(cfg.keys.recogOld) == 1 && all(keyCode(~cfg.keys.recogOld) == 0)) ||...
-            (keyCode(cfg.keys.recogNew) == 1 && all(keyCode(~cfg.keys.recogNew) == 0))
-          
-          recogRespPromptOn = nan;
-          break
-        end
-      elseif keyIsDown_recog && sum(keyCode) > 1
-        % draw the stimulus
-        Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
-        if phaseCfg.fixDuringStim
-          % and fixation on top of it
-          Screen('TextSize', w, cfg.text.fixSize);
-          Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
-          %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
-        end
-        % don't push multiple keys
-        Screen('TextSize', w, cfg.text.instructTextSize);
-        DrawFormattedText(w,cfg.text.multiKeyText,'center',errorTextY,cfg.text.errorTextColor, cfg.text.instructCharWidth);
-        % photocell rect with stim
-        if cfg.stim.photoCell
-          Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
-        end
-        % put them on the screen
-        Screen('Flip', w);
-        
-        keyIsDown_recog = 0;
-      end
-    end
+%     % check for too-fast response
+%     if ~phaseCfg.respDuringStim
+%       [keyIsDown_recog] = KbCheck;
+%       % if they press a key too early, tell them they responded too fast
+%       if keyIsDown_recog
+%         % draw the stimulus
+%         Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
+%         if phaseCfg.fixDuringStim
+%           % and fixation on top of it
+%           Screen('TextSize', w, cfg.text.fixSize);
+%           Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
+%           %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
+%         end
+%         % and the "too fast" text
+%         Screen('TextSize', w, cfg.text.instructTextSize);
+%         DrawFormattedText(w,cfg.text.tooFastText,'center',errorTextY,cfg.text.errorTextColor, cfg.text.instructCharWidth);
+%         % photocell rect with stim
+%         if cfg.stim.photoCell
+%           Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
+%         end
+%         Screen('Flip', w);
+%         
+%         keyIsDown_recog = 0;
+%         break
+%       end
+%     else
+%       [keyIsDown_recog, recogEndRT, keyCode] = KbCheck;
+%       % if they push more than one key, don't accept it
+%       if keyIsDown_recog && sum(keyCode) == 1
+%         % wait for key to be released
+%         while KbCheck(-1)
+%           WaitSecs(0.0001);
+%           
+%           % % proceed if time is up, regardless of whether key is held
+%           % if (GetSecs - recogRT) > phaseCfg.cr_recog_response
+%           %   break
+%           % end
+%         end
+%         % if cfg.text.printTrialInfo
+%         %   fprintf('"%s" typed at time %.3f seconds\n', KbName(keyCode), endRT - recogRT);
+%         % end
+%         if (keyCode(cfg.keys.recogOld) == 1 && all(keyCode(~cfg.keys.recogOld) == 0)) ||...
+%             (keyCode(cfg.keys.recogNew) == 1 && all(keyCode(~cfg.keys.recogNew) == 0))
+%           
+%           recogRespPromptOn = nan;
+%           break
+%         end
+%       elseif keyIsDown_recog && sum(keyCode) > 1
+%         % draw the stimulus
+%         Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
+%         if phaseCfg.fixDuringStim
+%           % and fixation on top of it
+%           Screen('TextSize', w, cfg.text.fixSize);
+%           Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
+%           %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
+%         end
+%         % don't push multiple keys
+%         Screen('TextSize', w, cfg.text.instructTextSize);
+%         DrawFormattedText(w,cfg.text.multiKeyText,'center',errorTextY,cfg.text.errorTextColor, cfg.text.instructCharWidth);
+%         % photocell rect with stim
+%         if cfg.stim.photoCell
+%           Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
+%         end
+%         % put them on the screen
+%         Screen('Flip', w);
+%         
+%         keyIsDown_recog = 0;
+%       end
+%     end
     
     % Wait <1 ms before checking the keyboard again to prevent
     % overload of the machine at elevated Priority():
     WaitSecs(0.0001);
   end
   
-  % wait out any remaining time
-  while (GetSecs - test_imgOnset) <= phaseCfg.cr_cueStimOnly
-    % Wait <1 ms before checking the keyboard again to prevent
-    % overload of the machine at elevated Priority():
-    WaitSecs(0.0001);
-  end
-  
-  keyIsDown_recog = logical(keyIsDown_recog);
-  
-  if ~keyIsDown_recog
-    % draw the stimulus
-    Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
-    % draw response prompt
-    Screen('DrawTexture', w, oldNewKeyImg, [], oldNewKeyImgRect);
-    if phaseCfg.fixDuringStim
-      % and fixation on top of it
-      Screen('TextSize', w, cfg.text.fixSize);
-      Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
-      %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
-    end
-    
-    % photocell rect with stim
-    if cfg.stim.photoCell
-      Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
-    end
-    
-    % photocell rect with stim
-    if cfg.stim.photoCell
-      Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
-    end
-    % put them on the screen; measure RT from when response key img appears
-    [recogRespPromptOn, recogRespPromptStartRT] = Screen('Flip', w);
-    
-    % poll for a recogResp
-    while (GetSecs - recogRespPromptStartRT) <= phaseCfg.cr_recog_response
-      
-      [keyIsDown_recog, recogEndRT, keyCode] = KbCheck;
-      % if they push more than one key, don't accept it
-      if keyIsDown_recog && sum(keyCode) == 1
-        % wait for key to be released
-        while KbCheck(-1)
-          WaitSecs(0.0001);
-          
-          % % proceed if time is up, regardless of whether key is held
-          % if (GetSecs - recogRT(i)) > phaseCfg.cr_recog_response
-          %   break
-          % end
-        end
-        % if cfg.text.printTrialInfo
-        %   fprintf('"%s" typed at time %.3f seconds\n', KbName(keyCode), endRT - recogRT);
-        % end
-        if (keyCode(cfg.keys.recogOld) == 1 && all(keyCode(~cfg.keys.recogOld) == 0)) ||...
-            (keyCode(cfg.keys.recogNew) == 1 && all(keyCode(~cfg.keys.recogNew) == 0))
-          break
-        end
-      elseif keyIsDown_recog && sum(keyCode) > 1
-        % draw the stimulus
-        Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
-        % draw response prompt
-        Screen('DrawTexture', w, oldNewKeyImg, [], oldNewKeyImgRect);
-        if phaseCfg.fixDuringStim
-          % and fixation on top of it
-          Screen('TextSize', w, cfg.text.fixSize);
-          Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
-          %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
-        end
-        % don't push multiple keys
-        Screen('TextSize', w, cfg.text.instructTextSize);
-        DrawFormattedText(w,cfg.text.multiKeyText,'center',errorTextY,cfg.text.errorTextColor, cfg.text.instructCharWidth);
-        
-        % photocell rect with stim
-        if cfg.stim.photoCell
-          Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
-        end
-        
-        % put them on the screen
-        Screen('Flip', w);
-        
-        keyIsDown_recog = 0;
-      end
-      % wait so we don't overload the system
-      WaitSecs(0.0001);
-    end
-    
-    keyIsDown_recog = logical(keyIsDown_recog);
-  end
-  
-  if ~keyIsDown_recog
-    if phaseCfg.playSound
-      Beeper(phaseCfg.incorrectSound,phaseCfg.incorrectVol);
-    end
-    
-    % "need to respond faster"
-    Screen('TextSize', w, cfg.text.instructTextSize);
-    DrawFormattedText(w,cfg.text.respondFaster,'center','center',cfg.text.respondFasterColor, cfg.text.instructCharWidth);
-    if cfg.stim.photoCell
-      Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
-    end
-    Screen('Flip', w);
-    
-    % need a new endRT
-    recogEndRT = GetSecs;
-    
-    % wait to let them view the feedback
-    WaitSecs(cfg.text.respondFasterFeedbackTime);
-  end
+%   % wait out any remaining time
+%   while (GetSecs - test_imgOnset) <= phaseCfg.cr_cueStimOnly
+%     % Wait <1 ms before checking the keyboard again to prevent
+%     % overload of the machine at elevated Priority():
+%     WaitSecs(0.0001);
+%   end
+%   
+%   keyIsDown_recog = logical(keyIsDown_recog);
+%   
+%   if ~keyIsDown_recog
+%     % draw the stimulus
+%     Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
+%     % draw response prompt
+%     Screen('DrawTexture', w, oldNewKeyImg, [], oldNewKeyImgRect);
+%     if phaseCfg.fixDuringStim
+%       % and fixation on top of it
+%       Screen('TextSize', w, cfg.text.fixSize);
+%       Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
+%       %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
+%     end
+%     
+%     % photocell rect with stim
+%     if cfg.stim.photoCell
+%       Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
+%     end
+%     
+%     % photocell rect with stim
+%     if cfg.stim.photoCell
+%       Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
+%     end
+%     % put them on the screen; measure RT from when response key img appears
+%     [recogRespPromptOn, recogRespPromptStartRT] = Screen('Flip', w);
+%     
+%     % poll for a recogResp
+%     while (GetSecs - recogRespPromptStartRT) <= phaseCfg.cr_recog_response
+%       
+%       [keyIsDown_recog, recogEndRT, keyCode] = KbCheck;
+%       % if they push more than one key, don't accept it
+%       if keyIsDown_recog && sum(keyCode) == 1
+%         % wait for key to be released
+%         while KbCheck(-1)
+%           WaitSecs(0.0001);
+%           
+%           % % proceed if time is up, regardless of whether key is held
+%           % if (GetSecs - recogRT(i)) > phaseCfg.cr_recog_response
+%           %   break
+%           % end
+%         end
+%         % if cfg.text.printTrialInfo
+%         %   fprintf('"%s" typed at time %.3f seconds\n', KbName(keyCode), endRT - recogRT);
+%         % end
+%         if (keyCode(cfg.keys.recogOld) == 1 && all(keyCode(~cfg.keys.recogOld) == 0)) ||...
+%             (keyCode(cfg.keys.recogNew) == 1 && all(keyCode(~cfg.keys.recogNew) == 0))
+%           break
+%         end
+%       elseif keyIsDown_recog && sum(keyCode) > 1
+%         % draw the stimulus
+%         Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
+%         % draw response prompt
+%         Screen('DrawTexture', w, oldNewKeyImg, [], oldNewKeyImgRect);
+%         if phaseCfg.fixDuringStim
+%           % and fixation on top of it
+%           Screen('TextSize', w, cfg.text.fixSize);
+%           Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
+%           %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
+%         end
+%         % don't push multiple keys
+%         Screen('TextSize', w, cfg.text.instructTextSize);
+%         DrawFormattedText(w,cfg.text.multiKeyText,'center',errorTextY,cfg.text.errorTextColor, cfg.text.instructCharWidth);
+%         
+%         % photocell rect with stim
+%         if cfg.stim.photoCell
+%           Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
+%         end
+%         
+%         % put them on the screen
+%         Screen('Flip', w);
+%         
+%         keyIsDown_recog = 0;
+%       end
+%       % wait so we don't overload the system
+%       WaitSecs(0.0001);
+%     end
+%     
+%     keyIsDown_recog = logical(keyIsDown_recog);
+%   end
+%   
+%   if ~keyIsDown_recog
+%     if phaseCfg.playSound
+%       Beeper(phaseCfg.incorrectSound,phaseCfg.incorrectVol);
+%     end
+%     
+%     % "need to respond faster"
+%     Screen('TextSize', w, cfg.text.instructTextSize);
+%     DrawFormattedText(w,cfg.text.respondFaster,'center','center',cfg.text.respondFasterColor, cfg.text.instructCharWidth);
+%     if cfg.stim.photoCell
+%       Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
+%     end
+%     Screen('Flip', w);
+%     
+%     % need a new endRT
+%     recogEndRT = GetSecs;
+%     
+%     % wait to let them view the feedback
+%     WaitSecs(cfg.text.respondFasterFeedbackTime);
+%   end
   
   % if this is an old image, get the word paired with it
   if testStims_img(i).targ
@@ -824,12 +824,12 @@ for i = trialNum:length(testStims_img)
     w_stimNum = int32(-1);
   end
   
-  if keyIsDown_recog && sum(keyCode) == 1
-    % get the key they pressed
-    recogRespKey = KbName(keyCode);
-    
-    if (keyCode(cfg.keys.recogOld) == 1 && all(keyCode(~cfg.keys.recogOld) == 0))
-      recogResp = 'old';
+%   if keyIsDown_recog && sum(keyCode) == 1
+%     % get the key they pressed
+%     recogRespKey = KbName(keyCode);
+%     
+%     if (keyCode(cfg.keys.recogOld) == 1 && all(keyCode(~cfg.keys.recogOld) == 0))
+%       recogResp = 'old';
       
       % if they answer 'old', get their answer and type it to the screen
       dispRecallResp = cfg.text.recallPrompt;
@@ -1007,7 +1007,8 @@ for i = trialNum:length(testStims_img)
             % wait until the key is pressed
             RestrictKeysForKbCheck(KbName(cfg.keys.instructContKey));
             KbWait(-1,2);
-            RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
+            RestrictKeysForKbCheck([]);
+%             RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
             
             % show preparation text
             DrawFormattedText(w, 'Get ready...', 'center', 'center', cfg.text.fixationColor, cfg.text.instructCharWidth);
@@ -1042,7 +1043,8 @@ for i = trialNum:length(testStims_img)
             % wait until the key is pressed
             RestrictKeysForKbCheck(KbName(cfg.keys.instructContKey));
             KbWait(-1,2);
-            RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
+%             RestrictKeysForKbCheck([cfg.keys.recogOld, cfg.keys.recogNew, cfg.keys.newSure, cfg.keys.newMaybe]);
+            RestrictKeysForKbCheck([]);
             
             % show preparation text
             DrawFormattedText(w, 'Get ready...', 'center', 'center', cfg.text.fixationColor, cfg.text.instructCharWidth);
@@ -1055,139 +1057,139 @@ for i = trialNum:length(testStims_img)
         end
       end
       
-    elseif (keyCode(cfg.keys.recogNew) == 1 && all(keyCode(~cfg.keys.recogNew) == 0))
-      recogResp = 'new';
-      % elseif they answer 'new', ask 'sure' vs 'maybe'
-      
-      % draw the stimulus
-      Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
-      % draw response prompt
-      Screen('DrawTexture', w, sureMaybeKeyImg, [], sureMaybeKeyImgRect);
-      if phaseCfg.fixDuringStim
-        % and fixation on top of it
-        Screen('TextSize', w, cfg.text.fixSize);
-        Screen('DrawText', w, cfg.text.respSymbol, respRectX, respRectY, cfg.text.fixationColor);
-        %DrawFormattedText(w,cfg.text.respSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
-      end
-      % photocell rect and stim
-      if cfg.stim.photoCell
-        Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
-      end
-      % put them on the screen; measure RT from when response key img appears
-      [newRespPromptOn, newRespPromptStartRT] = Screen('Flip', w);
-      
-      % poll for a newResp
-      while (GetSecs - newRespPromptStartRT) <= phaseCfg.cr_new_response
-        
-        [keyIsDown_new, newEndRT, keyCode] = KbCheck;
-        % if they push more than one key, don't accept it
-        if keyIsDown_new && sum(keyCode) == 1
-          % wait for key to be released
-          while KbCheck(-1)
-            WaitSecs(0.0001);
-            
-            % % proceed if time is up, regardless of whether key is held
-            % if (GetSecs - recogRT(i)) > phaseCfg.cr_recog_response
-            %   break
-            % end
-          end
-          % if cfg.text.printTrialInfo
-          %   fprintf('"%s" typed at time %.3f seconds\n', KbName(keyCode), endRT - recogRT);
-          % end
-          if (keyCode(cfg.keys.newSure) == 1 && all(keyCode(~cfg.keys.newSure) == 0)) ||...
-              (keyCode(cfg.keys.newMaybe) == 1 && all(keyCode(~cfg.keys.newMaybe) == 0))
-            break
-          end
-        elseif keyIsDown_new && sum(keyCode) > 1
-          % draw the stimulus
-          Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
-          % draw response prompt
-          Screen('DrawTexture', w, sureMaybeKeyImg, [], sureMaybeKeyImgRect);
-          if phaseCfg.fixDuringStim
-            % and fixation on top of it
-            Screen('TextSize', w, cfg.text.fixSize);
-            Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
-            %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
-          end
-          % don't push multiple keys
-          Screen('TextSize', w, cfg.text.instructTextSize);
-          DrawFormattedText(w,cfg.text.multiKeyText,'center',errorTextY,cfg.text.errorTextColor, cfg.text.instructCharWidth);
-          % photocell rect and stim
-          if cfg.stim.photoCell
-            Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
-          end
-          % put them on the screen
-          Screen('Flip', w);
-          
-          keyIsDown_new = 0;
-        end
-        % wait so we don't overload the system
-        WaitSecs(0.0001);
-      end
-      
-      keyIsDown_new = logical(keyIsDown_new);
-      
-      if ~keyIsDown_new
-        if phaseCfg.playSound
-          Beeper(phaseCfg.incorrectSound,phaseCfg.incorrectVol);
-        end
-        
-        % "need to respond faster"
-        Screen('TextSize', w, cfg.text.instructTextSize);
-        DrawFormattedText(w,cfg.text.respondFaster,'center','center',cfg.text.respondFasterColor, cfg.text.instructCharWidth);
-        if cfg.stim.photoCell
-          Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
-        end
-        Screen('Flip', w);
-        
-        % need a new endRT
-        newEndRT = GetSecs;
-        
-        % wait to let them view the feedback
-        WaitSecs(cfg.text.respondFasterFeedbackTime);
-      end
-      
-      if keyIsDown_new && sum(keyCode) == 1
-        % get the key they pressed
-        newRespKey = KbName(keyCode);
-        
-        if (keyCode(cfg.keys.newSure) == 1 && all(keyCode(~cfg.keys.newSure) == 0))
-          newResp = 'sure';
-        elseif (keyCode(cfg.keys.newMaybe) == 1 && all(keyCode(~cfg.keys.newMaybe) == 0))
-          newResp = 'maybe';
-        elseif keyCode(cfg.keys.newSure) == 0 && keyCode(cfg.keys.newMaybe) == 0
-          warning('Key other than a new response key was pressed. This should not happen.\n');
-          newResp = 'ERROR_OTHERKEY';
-        else
-          warning('Some other error occurred.\n');
-          newResp = 'ERROR_OTHER';
-        end
-      elseif keyIsDown_new && sum(keyCode) > 1
-        warning('Multiple keys were pressed.\n');
-        newAcc = false;
-        % get the keys they pressed
-        thisNewRespKey = KbName(keyCode);
-        newRespKey = sprintf('multikey%s',sprintf(repmat(' %s',1,numel(thisNewRespKey)),thisNewRespKey{:}));
-        newResp = 'ERROR_MULTIKEY';
-      end
-      
-    elseif keyCode(cfg.keys.recogOld) == 0 && keyCode(cfg.keys.recogNew) == 0
-      warning('Key other than a recognition response key was pressed. This should not happen.\n');
-      recogAcc = false;
-      recogResp = 'ERROR_OTHERKEY';
-    else
-      warning('Some other error occurred.\n');
-      recogAcc = false;
-      recogResp = 'ERROR_OTHER';
-    end
-  elseif keyIsDown_recog && sum(keyCode) > 1
-    warning('Multiple keys were pressed.\n');
-    recogAcc = false;
-    % get the keys they pressed
-    thisRecogRespKey = KbName(keyCode);
-    recogRespKey = sprintf('multikey%s',sprintf(repmat(' %s',1,numel(thisRecogRespKey)),thisRecogRespKey{:}));
-    recogResp = 'ERROR_MULTIKEY';
-  end
+%     elseif (keyCode(cfg.keys.recogNew) == 1 && all(keyCode(~cfg.keys.recogNew) == 0))
+%       recogResp = 'new';
+%       % elseif they answer 'new', ask 'sure' vs 'maybe'
+%       
+%       % draw the stimulus
+%       Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
+%       % draw response prompt
+%       Screen('DrawTexture', w, sureMaybeKeyImg, [], sureMaybeKeyImgRect);
+%       if phaseCfg.fixDuringStim
+%         % and fixation on top of it
+%         Screen('TextSize', w, cfg.text.fixSize);
+%         Screen('DrawText', w, cfg.text.respSymbol, respRectX, respRectY, cfg.text.fixationColor);
+%         %DrawFormattedText(w,cfg.text.respSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
+%       end
+%       % photocell rect and stim
+%       if cfg.stim.photoCell
+%         Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
+%       end
+%       % put them on the screen; measure RT from when response key img appears
+%       [newRespPromptOn, newRespPromptStartRT] = Screen('Flip', w);
+%       
+%       % poll for a newResp
+%       while (GetSecs - newRespPromptStartRT) <= phaseCfg.cr_new_response
+%         
+%         [keyIsDown_new, newEndRT, keyCode] = KbCheck;
+%         % if they push more than one key, don't accept it
+%         if keyIsDown_new && sum(keyCode) == 1
+%           % wait for key to be released
+%           while KbCheck(-1)
+%             WaitSecs(0.0001);
+%             
+%             % % proceed if time is up, regardless of whether key is held
+%             % if (GetSecs - recogRT(i)) > phaseCfg.cr_recog_response
+%             %   break
+%             % end
+%           end
+%           % if cfg.text.printTrialInfo
+%           %   fprintf('"%s" typed at time %.3f seconds\n', KbName(keyCode), endRT - recogRT);
+%           % end
+%           if (keyCode(cfg.keys.newSure) == 1 && all(keyCode(~cfg.keys.newSure) == 0)) ||...
+%               (keyCode(cfg.keys.newMaybe) == 1 && all(keyCode(~cfg.keys.newMaybe) == 0))
+%             break
+%           end
+%         elseif keyIsDown_new && sum(keyCode) > 1
+%           % draw the stimulus
+%           Screen('DrawTexture', w, testImgTex(i), [], stimImgRect);
+%           % draw response prompt
+%           Screen('DrawTexture', w, sureMaybeKeyImg, [], sureMaybeKeyImgRect);
+%           if phaseCfg.fixDuringStim
+%             % and fixation on top of it
+%             Screen('TextSize', w, cfg.text.fixSize);
+%             Screen('DrawText', w, cfg.text.fixSymbol, fixRectX, fixRectY, cfg.text.fixationColor);
+%             %DrawFormattedText(w,cfg.text.fixSymbol,'center','center',cfg.text.fixationColor, cfg.text.instructCharWidth);
+%           end
+%           % don't push multiple keys
+%           Screen('TextSize', w, cfg.text.instructTextSize);
+%           DrawFormattedText(w,cfg.text.multiKeyText,'center',errorTextY,cfg.text.errorTextColor, cfg.text.instructCharWidth);
+%           % photocell rect and stim
+%           if cfg.stim.photoCell
+%             Screen('FillRect', w, cfg.stim.photoCellRectColor, cfg.stim.photoCellRect);
+%           end
+%           % put them on the screen
+%           Screen('Flip', w);
+%           
+%           keyIsDown_new = 0;
+%         end
+%         % wait so we don't overload the system
+%         WaitSecs(0.0001);
+%       end
+%       
+%       keyIsDown_new = logical(keyIsDown_new);
+%       
+%       if ~keyIsDown_new
+%         if phaseCfg.playSound
+%           Beeper(phaseCfg.incorrectSound,phaseCfg.incorrectVol);
+%         end
+%         
+%         % "need to respond faster"
+%         Screen('TextSize', w, cfg.text.instructTextSize);
+%         DrawFormattedText(w,cfg.text.respondFaster,'center','center',cfg.text.respondFasterColor, cfg.text.instructCharWidth);
+%         if cfg.stim.photoCell
+%           Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
+%         end
+%         Screen('Flip', w);
+%         
+%         % need a new endRT
+%         newEndRT = GetSecs;
+%         
+%         % wait to let them view the feedback
+%         WaitSecs(cfg.text.respondFasterFeedbackTime);
+%       end
+%       
+%       if keyIsDown_new && sum(keyCode) == 1
+%         % get the key they pressed
+%         newRespKey = KbName(keyCode);
+%         
+%         if (keyCode(cfg.keys.newSure) == 1 && all(keyCode(~cfg.keys.newSure) == 0))
+%           newResp = 'sure';
+%         elseif (keyCode(cfg.keys.newMaybe) == 1 && all(keyCode(~cfg.keys.newMaybe) == 0))
+%           newResp = 'maybe';
+%         elseif keyCode(cfg.keys.newSure) == 0 && keyCode(cfg.keys.newMaybe) == 0
+%           warning('Key other than a new response key was pressed. This should not happen.\n');
+%           newResp = 'ERROR_OTHERKEY';
+%         else
+%           warning('Some other error occurred.\n');
+%           newResp = 'ERROR_OTHER';
+%         end
+%       elseif keyIsDown_new && sum(keyCode) > 1
+%         warning('Multiple keys were pressed.\n');
+%         newAcc = false;
+%         % get the keys they pressed
+%         thisNewRespKey = KbName(keyCode);
+%         newRespKey = sprintf('multikey%s',sprintf(repmat(' %s',1,numel(thisNewRespKey)),thisNewRespKey{:}));
+%         newResp = 'ERROR_MULTIKEY';
+%       end
+%       
+%     elseif keyCode(cfg.keys.recogOld) == 0 && keyCode(cfg.keys.recogNew) == 0
+%       warning('Key other than a recognition response key was pressed. This should not happen.\n');
+%       recogAcc = false;
+%       recogResp = 'ERROR_OTHERKEY';
+%     else
+%       warning('Some other error occurred.\n');
+%       recogAcc = false;
+%       recogResp = 'ERROR_OTHER';
+%     end
+%   elseif keyIsDown_recog && sum(keyCode) > 1
+%     warning('Multiple keys were pressed.\n');
+%     recogAcc = false;
+%     % get the keys they pressed
+%     thisRecogRespKey = KbName(keyCode);
+%     recogRespKey = sprintf('multikey%s',sprintf(repmat(' %s',1,numel(thisRecogRespKey)),thisRecogRespKey{:}));
+%     recogResp = 'ERROR_MULTIKEY';
+%   end
   
   if (phaseCfg.cr_isi > 0 && phaseCfg.fixDuringISI) || (phaseCfg.cr_isi == 0 && phaseCfg.fixDuringPreStim)
     % draw fixation after response
@@ -1205,62 +1207,56 @@ for i = trialNum:length(testStims_img)
   % Close this stimulus before next trial
   Screen('Close', testImgTex(i));
   
-  % compute old/new recognition response time
-  if phaseCfg.respDuringStim
-    measureRTfromHere = test_imgOnset;
-  else
-    measureRTfromHere = recogRespPromptStartRT;
-  end
-  recogResp_rt = int32(round(1000 * (recogEndRT - measureRTfromHere)));
+%   % compute old/new recognition response time
+%   if phaseCfg.respDuringStim
+%     measureRTfromHere = test_imgOnset;
+%   else
+%     measureRTfromHere = recogRespPromptStartRT;
+%   end
+%   recogResp_rt = int32(round(1000 * (recogEndRT - measureRTfromHere)));
   
   % compute accuracies and response times
-  if keyIsDown_recog
-    % compute response times and accuracy
-    if strcmp(recogResp,'old')
-      % compute accuracy
-      if testStims_img(i).targ
-        % hit
-        recogAcc = true;
-      elseif ~testStims_img(i).targ
-        % miss
-        recogAcc = false;
-      end
+%   if keyIsDown_recog
+%     % compute response times and accuracy
+%     if strcmp(recogResp,'old')
+%       % compute accuracy
+%       if testStims_img(i).targ
+%         % hit
+%         recogAcc = true;
+%       elseif ~testStims_img(i).targ
+%         % miss
+%         recogAcc = false;
+%       end
       
       % % there will always be a recallEndRT, so does not need to be
       % % conditional
       recallResp_rt = int32(round(1000 * (recallEndRT - recallRespPromptStartRT)));
       
-    elseif strcmp(recogResp,'new')
-      % compute accuracy
-      if testStims_img(i).targ
-        % false alarm
-        recogAcc = false;
-        newAcc = false;
-      elseif ~testStims_img(i).targ
-        % correct rejection
-        recogAcc = true;
-        newAcc = true;
-      end
-      
-      %if keyIsDown_new
-      % compute sure/maybe response time
-      newResp_rt = int32(round(1000 * (newEndRT - newRespPromptStartRT)));
-      %end
-    else
-      fprintf('recogResp was ''%s'' instead of ''old'' or ''new''. Something is wrong!\n',recogResp);
-    end
-  end
+%     elseif strcmp(recogResp,'new')
+%       % compute accuracy
+%       if testStims_img(i).targ
+%         % false alarm
+%         recogAcc = false;
+%         newAcc = false;
+%       elseif ~testStims_img(i).targ
+%         % correct rejection
+%         recogAcc = true;
+%         newAcc = true;
+%       end
+%       
+%       %if keyIsDown_new
+%       % compute sure/maybe response time
+%       newResp_rt = int32(round(1000 * (newEndRT - newRespPromptStartRT)));
+%       %end
+%     else
+%       fprintf('recogResp was ''%s'' instead of ''old'' or ''new''. Something is wrong!\n',recogResp);
+%     end
+%   end
   
   if cfg.text.printTrialInfo
-    fprintf('Trial %d of %d: %s, targ (1) or lure (0): %d. recogResponse: %s (key: %s; recogAcc = %d; rt = %d)\n',...
-      i,length(testStims_img),testStims_img(i).fileName,testStims_img(i).targ,recogResp,recogRespKey,recogAcc,recogResp_rt);
-    if strcmp(recogResp,'new')
-      fprintf('\tnewResponse: %s (key: %s; newAcc = %d; rt = %d)\n',newResp,newRespKey,newAcc,newResp_rt);
-    elseif strcmp(recogResp,'old')
-      fprintf('\trecallResponse: %s (origWord = %s; spelled correctly = %d; rt = %d)\n',recallResp,thisPairedWord,corrSpell,recallResp_rt);
-    else
-      fprintf('recogResp was ''%s'' instead of ''old'' or ''new''. Something is wrong!\n',recogResp);
-    end
+    fprintf('Trial %d of %d: %s, targ (1) or lure (0): %d.\n',...
+      i,length(testStims_img),testStims_img(i).fileName,testStims_img(i).targ);
+    fprintf('\trecallResponse: %s (origWord = %s; spelled correctly = %d; rt = %d)\n',recallResp,thisPairedWord,corrSpell,recallResp_rt);
   end
   
   % img stimulus properties
@@ -1282,7 +1278,7 @@ for i = trialNum:length(testStims_img)
     phaseName,...
     phaseCount,...
     phaseCfg.isExp,...
-    'RECOGTEST_STIM',...
+    'TEST_STIM',...
     i,...
     testStims_img(i).fileName,...
     i_stimNum,...
@@ -1293,95 +1289,95 @@ for i = trialNum:length(testStims_img)
     testStims_img(i).categoryStr,...
     i_catNum);
   
-  if ~isnan(recogRespPromptOn)
-    % Write test key image presentation to file:
-    fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
-      recogRespPromptOn,...
-      expParam.subject,...
-      sesName,...
-      phaseName,...
-      phaseCount,...
-      phaseCfg.isExp,...
-      'RECOGTEST_RECOGRESPPROMPT',...
-      i,...
-      testStims_img(i).fileName,...
-      i_stimNum,...
-      targStatus,...
-      spacStatus,...
-      studyLag,...
-      i_pairNum,...
-      testStims_img(i).categoryStr,...
-      i_catNum);
-  end
+%   if ~isnan(recogRespPromptOn)
+%     % Write test key image presentation to file:
+%     fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
+%       recogRespPromptOn,...
+%       expParam.subject,...
+%       sesName,...
+%       phaseName,...
+%       phaseCount,...
+%       phaseCfg.isExp,...
+%       'RECOGTEST_RECOGRESPPROMPT',...
+%       i,...
+%       testStims_img(i).fileName,...
+%       i_stimNum,...
+%       targStatus,...
+%       spacStatus,...
+%       studyLag,...
+%       i_pairNum,...
+%       testStims_img(i).categoryStr,...
+%       i_catNum);
+%   end
   
-  % Write trial result to file:
-  fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%d\t%d\n',...
-    recogEndRT,...
-    expParam.subject,...
-    sesName,...
-    phaseName,...
-    phaseCount,...
-    phaseCfg.isExp,...
-    'RECOGTEST_RECOGRESP',...
-    i,...
-    testStims_img(i).fileName,...
-    i_stimNum,...
-    targStatus,...
-    spacStatus,...
-    studyLag,...
-    i_pairNum,...
-    testStims_img(i).categoryStr,...
-    i_catNum,...
-    recogResp,...
-    recogRespKey,...
-    recogAcc,...
-    recogResp_rt);
+%   % Write trial result to file:
+%   fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%d\t%d\n',...
+%     recogEndRT,...
+%     expParam.subject,...
+%     sesName,...
+%     phaseName,...
+%     phaseCount,...
+%     phaseCfg.isExp,...
+%     'RECOGTEST_RECOGRESP',...
+%     i,...
+%     testStims_img(i).fileName,...
+%     i_stimNum,...
+%     targStatus,...
+%     spacStatus,...
+%     studyLag,...
+%     i_pairNum,...
+%     testStims_img(i).categoryStr,...
+%     i_catNum,...
+%     recogResp,...
+%     recogRespKey,...
+%     recogAcc,...
+%     recogResp_rt);
   
-  if ~isnan(newRespPromptOn)
-    % Write test key image presentation to file:
-    fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
-      newRespPromptOn,...
-      expParam.subject,...
-      sesName,...
-      phaseName,...
-      phaseCount,...
-      phaseCfg.isExp,...
-      'RECOGTEST_NEWRESPPROMPT',...
-      i,...
-      testStims_img(i).fileName,...
-      i_stimNum,...
-      targStatus,...
-      spacStatus,...
-      studyLag,...
-      i_pairNum,...
-      testStims_img(i).categoryStr,...
-      i_catNum);
-    
-    % Write trial result to file:
-    fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%d\t%d\n',...
-      newEndRT,...
-      expParam.subject,...
-      sesName,...
-      phaseName,...
-      phaseCount,...
-      phaseCfg.isExp,...
-      'RECOGTEST_NEWRESP',...
-      i,...
-      testStims_img(i).fileName,...
-      i_stimNum,...
-      targStatus,...
-      spacStatus,...
-      studyLag,...
-      i_pairNum,...
-      testStims_img(i).categoryStr,...
-      i_catNum,...
-      newResp,...
-      newRespKey,...
-      newAcc,...
-      newResp_rt);
-  end
+%   if ~isnan(newRespPromptOn)
+%     % Write test key image presentation to file:
+%     fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
+%       newRespPromptOn,...
+%       expParam.subject,...
+%       sesName,...
+%       phaseName,...
+%       phaseCount,...
+%       phaseCfg.isExp,...
+%       'RECOGTEST_NEWRESPPROMPT',...
+%       i,...
+%       testStims_img(i).fileName,...
+%       i_stimNum,...
+%       targStatus,...
+%       spacStatus,...
+%       studyLag,...
+%       i_pairNum,...
+%       testStims_img(i).categoryStr,...
+%       i_catNum);
+%     
+%     % Write trial result to file:
+%     fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%d\t%d\n',...
+%       newEndRT,...
+%       expParam.subject,...
+%       sesName,...
+%       phaseName,...
+%       phaseCount,...
+%       phaseCfg.isExp,...
+%       'RECOGTEST_NEWRESP',...
+%       i,...
+%       testStims_img(i).fileName,...
+%       i_stimNum,...
+%       targStatus,...
+%       spacStatus,...
+%       studyLag,...
+%       i_pairNum,...
+%       testStims_img(i).categoryStr,...
+%       i_catNum,...
+%       newResp,...
+%       newRespKey,...
+%       newAcc,...
+%       newResp_rt);
+%   end
   
-  if ~isnan(recallRespPromptOn)
+%   if ~isnan(recallRespPromptOn)
     % Write test key image presentation to file:
     fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
       recallRespPromptOn,...
@@ -1390,7 +1386,7 @@ for i = trialNum:length(testStims_img)
       phaseName,...
       phaseCount,...
       phaseCfg.isExp,...
-      'RECOGTEST_RECALLRESPPROMPT',...
+      'TEST_RECALLRESPPROMPT',...
       i,...
       testStims_img(i).fileName,...
       i_stimNum,...
@@ -1409,7 +1405,7 @@ for i = trialNum:length(testStims_img)
       phaseName,...
       phaseCount,...
       phaseCfg.isExp,...
-      'RECOGTEST_RECALLRESP',...
+      'TEST_RECALLRESP',...
       i,...
       testStims_img(i).fileName,...
       i_stimNum,...
@@ -1424,7 +1420,7 @@ for i = trialNum:length(testStims_img)
       w_stimNum,...
       corrSpell,...
       recallResp_rt);
-  end
+%   end
   
   %% phase log file
   
@@ -1436,7 +1432,7 @@ for i = trialNum:length(testStims_img)
     phaseName,...
     phaseCount,...
     phaseCfg.isExp,...
-    'RECOGTEST_STIM',...
+    'TEST_STIM',...
     i,...
     testStims_img(i).fileName,...
     i_stimNum,...
@@ -1447,95 +1443,95 @@ for i = trialNum:length(testStims_img)
     testStims_img(i).categoryStr,...
     i_catNum);
   
-  if ~isnan(recogRespPromptOn)
-    % Write test key image presentation to file:
-    fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
-      recogRespPromptOn,...
-      expParam.subject,...
-      sesName,...
-      phaseName,...
-      phaseCount,...
-      phaseCfg.isExp,...
-      'RECOGTEST_RECOGRESPPROMPT',...
-      i,...
-      testStims_img(i).fileName,...
-      i_stimNum,...
-      targStatus,...
-      spacStatus,...
-      studyLag,...
-      i_pairNum,...
-      testStims_img(i).categoryStr,...
-      i_catNum);
-  end
+%   if ~isnan(recogRespPromptOn)
+%     % Write test key image presentation to file:
+%     fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
+%       recogRespPromptOn,...
+%       expParam.subject,...
+%       sesName,...
+%       phaseName,...
+%       phaseCount,...
+%       phaseCfg.isExp,...
+%       'RECOGTEST_RECOGRESPPROMPT',...
+%       i,...
+%       testStims_img(i).fileName,...
+%       i_stimNum,...
+%       targStatus,...
+%       spacStatus,...
+%       studyLag,...
+%       i_pairNum,...
+%       testStims_img(i).categoryStr,...
+%       i_catNum);
+%   end
+%   
+%   % Write trial result to file:
+%   fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%d\t%d\n',...
+%     recogEndRT,...
+%     expParam.subject,...
+%     sesName,...
+%     phaseName,...
+%     phaseCount,...
+%     phaseCfg.isExp,...
+%     'RECOGTEST_RECOGRESP',...
+%     i,...
+%     testStims_img(i).fileName,...
+%     i_stimNum,...
+%     targStatus,...
+%     spacStatus,...
+%     studyLag,...
+%     i_pairNum,...
+%     testStims_img(i).categoryStr,...
+%     i_catNum,...
+%     recogResp,...
+%     recogRespKey,...
+%     recogAcc,...
+%     recogResp_rt);
+%   
+%   if ~isnan(newRespPromptOn)
+%     % Write test key image presentation to file:
+%     fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
+%       newRespPromptOn,...
+%       expParam.subject,...
+%       sesName,...
+%       phaseName,...
+%       phaseCount,...
+%       phaseCfg.isExp,...
+%       'RECOGTEST_NEWRESPPROMPT',...
+%       i,...
+%       testStims_img(i).fileName,...
+%       i_stimNum,...
+%       targStatus,...
+%       spacStatus,...
+%       studyLag,...
+%       i_pairNum,...
+%       testStims_img(i).categoryStr,...
+%       i_catNum);
+%     
+%     % Write trial result to file:
+%     fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%d\t%d\n',...
+%       newEndRT,...
+%       expParam.subject,...
+%       sesName,...
+%       phaseName,...
+%       phaseCount,...
+%       phaseCfg.isExp,...
+%       'RECOGTEST_NEWRESP',...
+%       i,...
+%       testStims_img(i).fileName,...
+%       i_stimNum,...
+%       targStatus,...
+%       spacStatus,...
+%       studyLag,...
+%       i_pairNum,...
+%       testStims_img(i).categoryStr,...
+%       i_catNum,...
+%       newResp,...
+%       newRespKey,...
+%       newAcc,...
+%       newResp_rt);
+%   end
   
-  % Write trial result to file:
-  fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%d\t%d\n',...
-    recogEndRT,...
-    expParam.subject,...
-    sesName,...
-    phaseName,...
-    phaseCount,...
-    phaseCfg.isExp,...
-    'RECOGTEST_RECOGRESP',...
-    i,...
-    testStims_img(i).fileName,...
-    i_stimNum,...
-    targStatus,...
-    spacStatus,...
-    studyLag,...
-    i_pairNum,...
-    testStims_img(i).categoryStr,...
-    i_catNum,...
-    recogResp,...
-    recogRespKey,...
-    recogAcc,...
-    recogResp_rt);
-  
-  if ~isnan(newRespPromptOn)
-    % Write test key image presentation to file:
-    fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
-      newRespPromptOn,...
-      expParam.subject,...
-      sesName,...
-      phaseName,...
-      phaseCount,...
-      phaseCfg.isExp,...
-      'RECOGTEST_NEWRESPPROMPT',...
-      i,...
-      testStims_img(i).fileName,...
-      i_stimNum,...
-      targStatus,...
-      spacStatus,...
-      studyLag,...
-      i_pairNum,...
-      testStims_img(i).categoryStr,...
-      i_catNum);
-    
-    % Write trial result to file:
-    fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%d\t%d\n',...
-      newEndRT,...
-      expParam.subject,...
-      sesName,...
-      phaseName,...
-      phaseCount,...
-      phaseCfg.isExp,...
-      'RECOGTEST_NEWRESP',...
-      i,...
-      testStims_img(i).fileName,...
-      i_stimNum,...
-      targStatus,...
-      spacStatus,...
-      studyLag,...
-      i_pairNum,...
-      testStims_img(i).categoryStr,...
-      i_catNum,...
-      newResp,...
-      newRespKey,...
-      newAcc,...
-      newResp_rt);
-  end
-  
-  if ~isnan(recallRespPromptOn)
+%   if ~isnan(recallRespPromptOn)
     % Write test key image presentation to file:
     fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
       recallRespPromptOn,...
@@ -1544,7 +1540,7 @@ for i = trialNum:length(testStims_img)
       phaseName,...
       phaseCount,...
       phaseCfg.isExp,...
-      'RECOGTEST_RECALLRESPPROMPT',...
+      'TEST_RECALLRESPPROMPT',...
       i,...
       testStims_img(i).fileName,...
       i_stimNum,...
@@ -1563,7 +1559,7 @@ for i = trialNum:length(testStims_img)
       phaseName,...
       phaseCount,...
       phaseCfg.isExp,...
-      'RECOGTEST_RECALLRESP',...
+      'TEST_RECALLRESP',...
       i,...
       testStims_img(i).fileName,...
       i_stimNum,...
@@ -1578,7 +1574,7 @@ for i = trialNum:length(testStims_img)
       w_stimNum,...
       corrSpell,...
       recallResp_rt);
-  end
+%   end
   
   %% Write netstation logs
   
@@ -1603,12 +1599,12 @@ for i = trialNum:length(testStims_img)
     % 'wstm', original paired word
     % 'wnum', paired word number
     
-    % recognition = rg
-    % 'rgrs', response string
-    % 'rgke', the name of the key pressed
-    % 'rgrt', the response time
-    % 'rgac', accuracy code (1=correct, 0=incorrect)
-    % 'rgkp', key pressed?(1=yes, 0=no)
+%     % recognition = rg
+%     % 'rgrs', response string
+%     % 'rgke', the name of the key pressed
+%     % 'rgrt', the response time
+%     % 'rgac', accuracy code (1=correct, 0=incorrect)
+%     % 'rgkp', key pressed?(1=yes, 0=no)
     
     % recall = rc
     % 'rcrs', response string
@@ -1616,12 +1612,12 @@ for i = trialNum:length(testStims_img)
     % 'rcac', accuracy of spelling (1=correct, 0=incorrect)
     % 'rckp', key pressed?(1=yes, 0=no)
     
-    % new = nw
-    % 'nwrs', response string
-    % 'nwke', the name of the key pressed
-    % 'nwrt', the response time
-    % 'nwac', accuracy code (1=correct, 0=incorrect)
-    % 'nwkp', key pressed?(1=yes, 0=no)
+%     % new = nw
+%     % 'nwrs', response string
+%     % 'nwke', the name of the key pressed
+%     % 'nwrt', the response time
+%     % 'nwac', accuracy code (1=correct, 0=incorrect)
+%     % 'nwkp', key pressed?(1=yes, 0=no)
     
     if ~isnan(test_preStimFixOn)
       % prestimulus fixation
@@ -1631,9 +1627,7 @@ for i = trialNum:length(testStims_img)
         'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
         'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
         'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
-        'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
-        'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
-        'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
+        'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp); %#ok<NASGU,ASGLU>
     end
     
     % img presentation
@@ -1643,65 +1637,63 @@ for i = trialNum:length(testStims_img)
       'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
       'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
       'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
-      'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
-      'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
-      'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
+      'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp); %#ok<NASGU,ASGLU>
     
-    if ~isnan(recogRespPromptOn)
-      % recognition response prompt
-      [NSEventStatus, NSEventError] = NetStation('Event', 'PROM', recogRespPromptOn, .001,...
-        'subn', expParam.subject, 'sess', sesName, 'phas', phaseName, 'pcou', int32(phaseCount),...
-        'expt',phaseCfg.isExp, 'type', 'recognition', 'trln', int32(i),...
-        'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
-        'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
-        'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
-        'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
-        'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
-        'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
-    end
+%     if ~isnan(recogRespPromptOn)
+%       % recognition response prompt
+%       [NSEventStatus, NSEventError] = NetStation('Event', 'PROM', recogRespPromptOn, .001,...
+%         'subn', expParam.subject, 'sess', sesName, 'phas', phaseName, 'pcou', int32(phaseCount),...
+%         'expt',phaseCfg.isExp, 'type', 'recognition', 'trln', int32(i),...
+%         'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
+%         'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
+%         'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
+%         'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
+%         'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
+%         'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
+%     end
     
-    % did they make a recognition response?
-    if keyIsDown_recog
-      % button push
-      [NSEventStatus, NSEventError] = NetStation('Event', 'RESP', recogEndRT, .001,...
-        'subn', expParam.subject, 'sess', sesName, 'phas', phaseName, 'pcou', int32(phaseCount),...
-        'expt',phaseCfg.isExp, 'type', 'recognition', 'trln', int32(i),...
-        'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
-        'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
-        'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
-        'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
-        'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
-        'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
-    end
+%     % did they make a recognition response?
+%     if keyIsDown_recog
+%       % button push
+%       [NSEventStatus, NSEventError] = NetStation('Event', 'RESP', recogEndRT, .001,...
+%         'subn', expParam.subject, 'sess', sesName, 'phas', phaseName, 'pcou', int32(phaseCount),...
+%         'expt',phaseCfg.isExp, 'type', 'recognition', 'trln', int32(i),...
+%         'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
+%         'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
+%         'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
+%         'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
+%         'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
+%         'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
+%     end
     
-    if ~isnan(newRespPromptOn)
-      % new response prompt
-      [NSEventStatus, NSEventError] = NetStation('Event', 'PROM', newRespPromptOn, .001,...
-        'subn', expParam.subject, 'sess', sesName, 'phas', phaseName, 'pcou', int32(phaseCount),...
-        'expt',phaseCfg.isExp, 'type', 'new', 'trln', int32(i),...
-        'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
-        'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
-        'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
-        'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
-        'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
-        'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
-      
-      % did they make a new response?
-      if keyIsDown_new
-        % button push
-        [NSEventStatus, NSEventError] = NetStation('Event', 'RESP', newEndRT, .001,...
-          'subn', expParam.subject, 'sess', sesName, 'phas', phaseName, 'pcou', int32(phaseCount),...
-          'expt',phaseCfg.isExp, 'type', 'new', 'trln', int32(i),...
-          'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
-          'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
-          'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
-          'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
-          'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
-          'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
-      end
-    end
+%     if ~isnan(newRespPromptOn)
+%       % new response prompt
+%       [NSEventStatus, NSEventError] = NetStation('Event', 'PROM', newRespPromptOn, .001,...
+%         'subn', expParam.subject, 'sess', sesName, 'phas', phaseName, 'pcou', int32(phaseCount),...
+%         'expt',phaseCfg.isExp, 'type', 'new', 'trln', int32(i),...
+%         'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
+%         'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
+%         'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
+%         'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
+%         'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
+%         'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
+%       
+%       % did they make a new response?
+%       if keyIsDown_new
+%         % button push
+%         [NSEventStatus, NSEventError] = NetStation('Event', 'RESP', newEndRT, .001,...
+%           'subn', expParam.subject, 'sess', sesName, 'phas', phaseName, 'pcou', int32(phaseCount),...
+%           'expt',phaseCfg.isExp, 'type', 'new', 'trln', int32(i),...
+%           'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
+%           'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
+%           'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
+%           'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
+%           'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
+%           'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
+%       end
+%     end
     
-    if ~isnan(recallRespPromptOn)
+%     if ~isnan(recallRespPromptOn)
       % recall response prompt
       [NSEventStatus, NSEventError] = NetStation('Event', 'PROM', recallRespPromptOn, .001,...
         'subn', expParam.subject, 'sess', sesName, 'phas', phaseName, 'pcou', int32(phaseCount),...
@@ -1709,9 +1701,7 @@ for i = trialNum:length(testStims_img)
         'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
         'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
         'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
-        'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
-        'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
-        'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
+        'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp); %#ok<NASGU,ASGLU>
       
       % did they make a recall response?
       %
@@ -1723,10 +1713,8 @@ for i = trialNum:length(testStims_img)
         'istm', testStims_img(i).fileName, 'inum', i_stimNum, 'icts', testStims_img(i).categoryStr, 'ictn', i_catNum,...
         'targ', targStatus, 'spac', spacStatus, 'slag', studyLag,...
         'pnum', i_pairNum,'wstm', thisPairedWord, 'wnum', w_stimNum,...
-        'rgrs', recogResp, 'rgrt', recogResp_rt, 'rgac', recogAcc, 'rgkp', keyIsDown_recog,...
-        'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp,...
-        'nwrs', newResp, 'nwke', newRespKey, 'nwrt', newResp_rt, 'nwac', newAcc, 'nwkp', keyIsDown_new); %#ok<NASGU,ASGLU>
-    end
+        'rcrs', recallResp, 'rcrt', recallResp_rt, 'rcac', corrSpell, 'rckp', madeRecallResp); %#ok<NASGU,ASGLU>
+%     end
     
   end % useNS
   

@@ -147,6 +147,23 @@ incorrect_sNumColor = uint8((rgb('Red') * 255) + 0.5);
 [~,respondFasterY] = RectCenter(cfg.screen.wRect);
 respondFasterY = respondFasterY + (cfg.screen.wRect(RectBottom) * 0.04);
 
+% read the proper response key image, if desired
+if ~isfield(phaseCfg,'respKeyWithPrompt')
+  phaseCfg.respKeyWithPrompt = false;
+end
+if phaseCfg.respKeyWithPrompt
+  if phaseCfg.isExp
+    respKeyImg = imread(cfg.files.speciesNumKeyImg);
+    respKeyImgHeight = size(respKeyImg,1) * cfg.files.speciesNumKeyImgScale;
+    respKeyImgWidth = size(respKeyImg,2) * cfg.files.speciesNumKeyImgScale;
+  else
+    respKeyImg = imread(cfg.files.practice.speciesNumKeyImg);
+    respKeyImgHeight = size(respKeyImg,1) * cfg.files.practice.speciesNumKeyImgScale;
+    respKeyImgWidth = size(respKeyImg,2) * cfg.files.practice.speciesNumKeyImgScale;
+  end
+  respKeyImg = Screen('MakeTexture',w,respKeyImg);
+end
+
 % default is to not print out trial details
 if ~isfield(cfg.text,'printTrialInfo') || isempty(cfg.text.printTrialInfo)
   cfg.text.printTrialInfo = false;
@@ -171,6 +188,13 @@ if phaseCfg.playSound
   if ~isfield(phaseCfg,'incorrectVol')
     phaseCfg.incorrectVol = 0.6;
   end
+end
+
+if ~isfield(phaseCfg,'correctFeedback')
+  phaseCfg.correctFeedback = '';
+end
+if ~isfield(phaseCfg,'incorrectFeedback')
+  phaseCfg.incorrectFeedback = '';
 end
 
 % are they allowed to respond while the stimulus is on the screen?
@@ -265,6 +289,15 @@ stimImgWidth = size(stimImg,2) * cfg.stim.stimScale;
 stimImgRect = [0 0 stimImgWidth stimImgHeight];
 stimImgRect = CenterRect(stimImgRect,cfg.screen.wRect);
 
+% set the response key image rectangle
+if phaseCfg.respKeyWithPrompt
+  respKeyImgRect = SetRect(0, 0, respKeyImgWidth, respKeyImgHeight);
+  respKeyImgRect = CenterRect(respKeyImgRect, cfg.screen.wRect);
+  respKeyImgRect = AlignRect(respKeyImgRect, cfg.screen.wRect, 'bottom', 'bottom');
+  % respKeyImgRect = CenterRect([0 0 respKeyImgWidth respKeyImgHeight], stimImgRect);
+  % respKeyImgRect = AdjoinRect(respKeyImgRect, stimImgRect, RectBottom);
+end
+
 % text location for error (e.g., "too fast") text
 [~,errorTextY] = RectCenter(cfg.screen.wRect);
 errorTextY = errorTextY + (stimImgHeight / 2);
@@ -348,6 +381,10 @@ else
   showInstruct = true;
 end
 
+if b == 8 || b == 15 || b == 22
+   showInstruct = true; 
+end
+
 if showInstruct
   if ~expParam.photoCellTest
     for inst = 1:length(phaseCfg.instruct.name)
@@ -393,9 +430,21 @@ end
 
 %% run the naming task
 
+if isfield(cfg.keys,'s00')
+  restrictKeysStr = ', cfg.keys.s00';
+else
+  restrictKeysStr = '';
+end
+for i = 1:length(cfg.keys.speciesKeyNames)
+  % sXX, where XX is an integer, buffered with a zero if i <= 9
+  restrictKeysStr = cat(2,restrictKeysStr,sprintf(', cfg.keys.s%.2d',i));
+end
+restrictKeysStr = sprintf('[%s]',restrictKeysStr(3:end));
+
 % only check these keys
-RestrictKeysForKbCheck([cfg.keys.s01, cfg.keys.s02, cfg.keys.s03, cfg.keys.s04, cfg.keys.s05,...
-  cfg.keys.s06, cfg.keys.s07, cfg.keys.s08, cfg.keys.s09, cfg.keys.s10, cfg.keys.s00]);
+RestrictKeysForKbCheck(eval(restrictKeysStr));
+% RestrictKeysForKbCheck([cfg.keys.s01, cfg.keys.s02, cfg.keys.s03, cfg.keys.s04, cfg.keys.s05,...
+%   cfg.keys.s06, cfg.keys.s07, cfg.keys.s08, cfg.keys.s09, cfg.keys.s10, cfg.keys.s00]);
 
 % start the blink break timer
 if phaseCfg.isExp && cfg.stim.secUntilBlinkBreak > 0
@@ -405,6 +454,7 @@ end
 % store accuracy and response time
 trialAcc = false(length(nameStims),1);
 trialRT = zeros(length(nameStims),1,'int32');
+
 
 for i = trialNum:length(nameStims)
   % do an impedance check after a certain number of blocks or trials
@@ -455,8 +505,9 @@ for i = trialNum:length(nameStims)
         WaitSecs(1.000);
         
         % only check these keys
-        RestrictKeysForKbCheck([cfg.keys.s01, cfg.keys.s02, cfg.keys.s03, cfg.keys.s04, cfg.keys.s05,...
-          cfg.keys.s06, cfg.keys.s07, cfg.keys.s08, cfg.keys.s09, cfg.keys.s10, cfg.keys.s00]);
+        RestrictKeysForKbCheck(eval(restrictKeysStr));
+        % RestrictKeysForKbCheck([cfg.keys.s01, cfg.keys.s02, cfg.keys.s03, cfg.keys.s04, cfg.keys.s05,...
+        %   cfg.keys.s06, cfg.keys.s07, cfg.keys.s08, cfg.keys.s09, cfg.keys.s10, cfg.keys.s00]);
         
         % reset the blink timer
         if cfg.stim.secUntilBlinkBreak > 0
@@ -475,8 +526,9 @@ for i = trialNum:length(nameStims)
       fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\n',thisGetSecs,expParam.subject,sesName,phaseName,phaseCount,phaseCfg.isExp,'IMPEDANCE_END');
       
       % only check these keys
-      RestrictKeysForKbCheck([cfg.keys.s01, cfg.keys.s02, cfg.keys.s03, cfg.keys.s04, cfg.keys.s05,...
-        cfg.keys.s06, cfg.keys.s07, cfg.keys.s08, cfg.keys.s09, cfg.keys.s10, cfg.keys.s00]);
+      RestrictKeysForKbCheck(eval(restrictKeysStr));
+      % RestrictKeysForKbCheck([cfg.keys.s01, cfg.keys.s02, cfg.keys.s03, cfg.keys.s04, cfg.keys.s05,...
+      %   cfg.keys.s06, cfg.keys.s07, cfg.keys.s08, cfg.keys.s09, cfg.keys.s10, cfg.keys.s00]);
       
       % show preparation text
       DrawFormattedText(w, 'Get ready...', 'center', 'center', cfg.text.fixationColor, cfg.text.instructCharWidth);
@@ -529,8 +581,9 @@ for i = trialNum:length(nameStims)
     fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\n',thisGetSecs,expParam.subject,sesName,phaseName,phaseCount,phaseCfg.isExp,'BLINK_END');
     fprintf(phLFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\n',thisGetSecs,expParam.subject,sesName,phaseName,phaseCount,phaseCfg.isExp,'BLINK_END');
     % only check these keys
-    RestrictKeysForKbCheck([cfg.keys.s01, cfg.keys.s02, cfg.keys.s03, cfg.keys.s04, cfg.keys.s05,...
-      cfg.keys.s06, cfg.keys.s07, cfg.keys.s08, cfg.keys.s09, cfg.keys.s10, cfg.keys.s00]);
+    RestrictKeysForKbCheck(eval(restrictKeysStr));
+    % RestrictKeysForKbCheck([cfg.keys.s01, cfg.keys.s02, cfg.keys.s03, cfg.keys.s04, cfg.keys.s05,...
+    %   cfg.keys.s06, cfg.keys.s07, cfg.keys.s08, cfg.keys.s09, cfg.keys.s10, cfg.keys.s00]);
     
     % show preparation text
     DrawFormattedText(w, 'Get ready...', 'center', 'center', cfg.text.fixationColor, cfg.text.instructCharWidth);
@@ -742,36 +795,53 @@ for i = trialNum:length(nameStims)
   if keyIsDown
     % if they hit a key while the stimulus was on the screen (the only way
     % keyIsDown==1), take the stimulus off screen, and give feedback
-    % (species number)
+    % (species number and optional string)
     
-    if (keyCode(cfg.keys.(sprintf('s%.2d',specNum))) == 1 && all(keyCode(~cfg.keys.(sprintf('s%.2d',specNum))) == 0))
-      sNumColor = correct_sNumColor;
-      if phaseCfg.playSound
-        respSound = phaseCfg.correctSound;
-        respVol = phaseCfg.correctVol;
+    if phaseCfg.name_feedback > 0
+      
+      if (keyCode(cfg.keys.(sprintf('s%.2d',specNum))) == 1 && all(keyCode(~cfg.keys.(sprintf('s%.2d',specNum))) == 0))
+        fb_str = phaseCfg.correctFeedback;
+        sNumColor = correct_sNumColor;
+        if phaseCfg.playSound
+          respSound = phaseCfg.correctSound;
+          respVol = phaseCfg.correctVol;
+        end
+      elseif keyCode(cfg.keys.(sprintf('s%.2d',specNum))) == 0
+        sNumColor = incorrect_sNumColor;
+        fb_str = phaseCfg.incorrectFeedback;
+        if phaseCfg.playSound
+          respSound = phaseCfg.incorrectSound;
+          respVol = phaseCfg.incorrectVol;
+        end
       end
-    elseif keyCode(cfg.keys.(sprintf('s%.2d',specNum))) == 0
-      sNumColor = incorrect_sNumColor;
-      if phaseCfg.playSound
-        respSound = phaseCfg.incorrectSound;
-        respVol = phaseCfg.incorrectVol;
+      % draw species number in the appropriate color, and include string if
+      % it is set
+      Screen('TextSize', w, cfg.text.basicTextSize);
+      % TODO: make text rectangles
+      if specNum > 0
+        if ~isempty(fb_str)
+          fb_str = sprintf('%s\n%d',fb_str,specNum);
+        else
+          fb_str = num2str(specNum);
+        end
+      else
+        if ~isempty(fb_str)
+          fb_str = sprintf('%s\n%s',fb_str,cfg.text.basicFamStr);
+        else
+          fb_str = cfg.text.basicFamStr;
+        end
       end
-    end
-    % draw species number in the appropriate color
-    Screen('TextSize', w, cfg.text.basicTextSize);
-    % TODO: make text rectangles
-    if specNum > 0
-      DrawFormattedText(w,num2str(specNum),'center','center',sNumColor, cfg.text.instructCharWidth);
-    else
-      DrawFormattedText(w,cfg.text.basicFamStr,'center','center',sNumColor, cfg.text.instructCharWidth);
-    end
-    if cfg.stim.photoCell
-      Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
-    end
-    Screen('Flip', w);
-    
-    if phaseCfg.playSound
-      Beeper(respSound,respVol);
+      DrawFormattedText(w,fb_str,'center','center',sNumColor, cfg.text.instructCharWidth);
+      
+      if cfg.stim.photoCell
+        Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
+      end
+      Screen('Flip', w);
+      
+      if phaseCfg.playSound
+        Beeper(respSound,respVol);
+      end
+      
     end
     
     respPromptOn = NaN;
@@ -780,6 +850,10 @@ for i = trialNum:length(nameStims)
     Screen('TextSize', w, cfg.text.basicTextSize);
     %DrawFormattedText(w,cfg.text.respSymbol,'center','center',initial_sNumColor, cfg.text.instructCharWidth);
     Screen('DrawText', w, cfg.text.respSymbol, respRectX, respRectY, initial_sNumColor);
+    if phaseCfg.respKeyWithPrompt
+      % with the response key image
+      Screen('DrawTexture', w, respKeyImg, [], respKeyImgRect);
+    end
     if cfg.stim.photoCell
       Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
     end
@@ -804,35 +878,50 @@ for i = trialNum:length(nameStims)
         %   fprintf('"%s" typed at time %.3f seconds\n', KbName(keyCode), endRT - startRT);
         % end
         
-        % give immediate feedback
-        if (keyCode(cfg.keys.(sprintf('s%.2d',specNum))) == 1 && all(keyCode(~cfg.keys.(sprintf('s%.2d',specNum))) == 0))
-          sNumColor = correct_sNumColor;
-          if phaseCfg.playSound
-            respSound = phaseCfg.correctSound;
-            respVol = phaseCfg.correctVol;
+        if phaseCfg.name_feedback > 0
+          % give immediate feedback
+          if (keyCode(cfg.keys.(sprintf('s%.2d',specNum))) == 1 && all(keyCode(~cfg.keys.(sprintf('s%.2d',specNum))) == 0))
+            fb_str = phaseCfg.correctFeedback;
+            sNumColor = correct_sNumColor;
+            if phaseCfg.playSound
+              respSound = phaseCfg.correctSound;
+              respVol = phaseCfg.correctVol;
+            end
+          elseif keyCode(cfg.keys.(sprintf('s%.2d',specNum))) == 0
+            sNumColor = incorrect_sNumColor;
+            fb_str = phaseCfg.incorrectFeedback;
+            if phaseCfg.playSound
+              respSound = phaseCfg.incorrectSound;
+              respVol = phaseCfg.incorrectVol;
+            end
           end
-        elseif keyCode(cfg.keys.(sprintf('s%.2d',specNum))) == 0
-          sNumColor = incorrect_sNumColor;
-          if phaseCfg.playSound
-            respSound = phaseCfg.incorrectSound;
-            respVol = phaseCfg.incorrectVol;
+          % draw species number in the appropriate color, and include string if
+          % it is set
+          Screen('TextSize', w, cfg.text.basicTextSize);
+          % TODO: make text rectangles
+          if specNum > 0
+            if ~isempty(fb_str)
+              fb_str = sprintf('%s\n%d',fb_str,specNum);
+            else
+              fb_str = num2str(specNum);
+            end
+          else
+            if ~isempty(fb_str)
+              fb_str = sprintf('%s\n%s',fb_str,cfg.text.basicFamStr);
+            else
+              fb_str = cfg.text.basicFamStr;
+            end
           end
-        end
-        % draw species number in the appropriate color
-        Screen('TextSize', w, cfg.text.basicTextSize);
-        % TODO: make text rectangles
-        if specNum > 0
-          DrawFormattedText(w,num2str(specNum),'center','center',sNumColor, cfg.text.instructCharWidth);
-        else
-          DrawFormattedText(w,cfg.text.basicFamStr,'center','center',sNumColor, cfg.text.instructCharWidth);
-        end
-        if cfg.stim.photoCell
-          Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
-        end
-        Screen('Flip', w);
-        
-        if phaseCfg.playSound
-          Beeper(respSound,respVol);
+          DrawFormattedText(w,fb_str,'center','center',sNumColor, cfg.text.instructCharWidth);
+          if cfg.stim.photoCell
+            Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
+          end
+          Screen('Flip', w);
+          
+          if phaseCfg.playSound
+            Beeper(respSound,respVol);
+          end
+          
         end
         
         break
@@ -841,6 +930,10 @@ for i = trialNum:length(nameStims)
         Screen('TextSize', w, cfg.text.basicTextSize);
         %DrawFormattedText(w,cfg.text.respSymbol,'center','center',initial_sNumColor, cfg.text.instructCharWidth);
         Screen('DrawText', w, cfg.text.respSymbol, respRectX, respRectY, initial_sNumColor);
+        if phaseCfg.respKeyWithPrompt
+          % with the response key image
+          Screen('DrawTexture', w, respKeyImg, [], respKeyImgRect);
+        end
         % don't push multiple keys
         Screen('TextSize', w, cfg.text.instructTextSize);
         DrawFormattedText(w,cfg.text.multiKeyText,'center',errorTextY,cfg.text.errorTextColor, cfg.text.instructCharWidth);
@@ -868,26 +961,39 @@ for i = trialNum:length(nameStims)
     
     % if they didn't respond, show correct response
     if ~keyIsDown
-      sNumColor = incorrect_sNumColor;
-      % TODO: make text rectangles
-      Screen('TextSize', w, cfg.text.basicTextSize);
-      if specNum > 0
-        DrawFormattedText(w,num2str(specNum),'center','center',sNumColor, cfg.text.instructCharWidth);
-      else
-        DrawFormattedText(w,cfg.text.basicFamStr,'center','center',sNumColor, cfg.text.instructCharWidth);
-      end
-      % "need to respond faster"
-      Screen('TextSize', w, cfg.text.instructTextSize);
-      DrawFormattedText(w,cfg.text.respondFaster,'center',respondFasterY,cfg.text.respondFasterColor, cfg.text.instructCharWidth);
-      if cfg.stim.photoCell
-        Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
-      end
-      Screen('Flip', w);
       
-      if phaseCfg.playSound
-        respSound = phaseCfg.incorrectSound;
-        respVol = phaseCfg.incorrectVol;
-        Beeper(respSound,respVol);
+      if phaseCfg.name_feedback > 0
+        sNumColor = incorrect_sNumColor;
+        fb_str = phaseCfg.incorrectFeedback;
+        % TODO: make text rectangles
+        Screen('TextSize', w, cfg.text.basicTextSize);
+        if specNum > 0
+          if ~isempty(fb_str)
+            fb_str = sprintf('%s\n%d',fb_str,specNum);
+          else
+            fb_str = num2str(specNum);
+          end
+        else
+          if ~isempty(fb_str)
+            fb_str = sprintf('%s\n%s',fb_str,cfg.text.basicFamStr);
+          else
+            fb_str = cfg.text.basicFamStr;
+          end
+        end
+        DrawFormattedText(w,fb_str,'center','center',sNumColor, cfg.text.instructCharWidth);
+        % "need to respond faster"
+        Screen('TextSize', w, cfg.text.instructTextSize);
+        DrawFormattedText(w,cfg.text.respondFaster,'center',respondFasterY,cfg.text.respondFasterColor, cfg.text.instructCharWidth);
+        if cfg.stim.photoCell
+          Screen('FillRect', w, cfg.stim.photoCellAntiRectColor, cfg.stim.photoCellRect);
+        end
+        Screen('Flip', w);
+        
+        if phaseCfg.playSound
+          respSound = phaseCfg.incorrectSound;
+          respVol = phaseCfg.incorrectVol;
+          Beeper(respSound,respVol);
+        end
       end
       
       % need a new endRT
@@ -895,8 +1001,10 @@ for i = trialNum:length(nameStims)
     end
   end
   
-  % wait to let them view the feedback
-  WaitSecs(phaseCfg.name_feedback);
+  if phaseCfg.name_feedback > 0
+    % wait to let them view the feedback
+    WaitSecs(phaseCfg.name_feedback);
+  end
   
   if (phaseCfg.name_isi > 0 && phaseCfg.fixDuringISI) || (phaseCfg.name_isi == 0 && phaseCfg.fixDuringPreStim)
     % draw fixation

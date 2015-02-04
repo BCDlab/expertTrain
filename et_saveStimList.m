@@ -1,8 +1,24 @@
-function [cfg] = et_saveStimList(cfg,stimDir,stimInfoStruct,shuffleSpecies)
-% function [cfg] = et_saveStimList(cfg,stimDir,stimInfoStruct,shuffleSpecies)
+function [cfg] = et_saveStimList(cfg,stimDir,stimInfoStruct,shuffleSpecies,manualSpeciesNums)
+% function [cfg] = et_saveStimList(cfg,stimDir,stimInfoStruct,shuffleSpecies,manualSpeciesNums)
 
-if ~exist('shuffleSpecies','var') || isempty(shuffleSpecies)
+if nargin < 5
+  manualSpeciesNums = [];
+  if nargin < 4
+    warning('Default setting: Shuffling species numbers!');
+    shuffleSpecies = true;
+    if nargin < 3
+      error('Not enough input arguments!');
+    end
+  end
+end
+
+if isempty(shuffleSpecies)
+  warning('Default setting: Shuffling species numbers!');
   shuffleSpecies = true;
+end
+
+if shuffleSpecies && ~isempty(manualSpeciesNums)
+  error('Cannot shuffle species numbers and define manual species numbers');
 end
 
 if ~isfield(stimInfoStruct,'yokeSpecies') || isempty(stimInfoStruct.yokeSpecies)
@@ -112,9 +128,17 @@ for f = 1:length(stimInfoStruct.familyNames)
         end
       else
         if ~exist('specNum','var')
-          specNum = 1:length(uniqueSpecStr(f,:));
+          if ~isempty(manualSpeciesNums)
+            specNum = manualSpeciesNums;
+          else
+            specNum = 1:length(uniqueSpecStr(f,:));
+          end
         else
-          specNum = cat(1,specNum,1:length(uniqueSpecStr(f,:)));
+          if ~isempty(manualSpeciesNums)
+            specNum = cat(1,specNum,manualSpeciesNums);
+          else
+            specNum = cat(1,specNum,1:length(uniqueSpecStr(f,:)));
+          end
         end
       end
       

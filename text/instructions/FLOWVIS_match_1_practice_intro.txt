@@ -1,0 +1,9 @@
+This is the practice for the Matching experiment.
+
+For each trial you will see two images, one after the other.
+The two types of images are solids and liquids.
+
+Press "sameKey" if the images are the same type.
+Press "diffKey" if the images are different types.
+
+Press "contKey" to begin the matching task.

@@ -13,7 +13,8 @@ function expertTrain(expName,subNum,useNS,photoCellTest)
 %  - Exposure with ratings (space_exposure)
 %  - Pair associate studying (space_multistudy)
 %  - Math distractor (space_distract_math)
-%  - Cued recall with typing (space_cued_recall)
+%  - Recognition and cued recall with typing (space_cued_recall)
+%  - Cued recall with typing (space_cued_recall_only)
 %
 % Input:
 %  expName:       the name of the experiment (as a string). You must set up
@@ -120,7 +121,7 @@ elseif nargin == 1
   % cannot proceed with one argument
   error('You provided 1 argument, but you need either zero or three! Must provide either no inputs (%s;) or provide experiment name (as a string), subject number (as an integer), and whether to use Net Station (1 or 0). E.g. %s(''%s'', 9, 1);',mfilename,mfilename,expName);
 elseif nargin == 2
-  % cannot proceed with one argument
+  % cannot proceed with two arguments
   error('You provided 2 arguments, but you need either zero or three! Must provide either no inputs (%s;) or provide experiment name (as a string), subject number (as an integer), and whether to use Net Station (1 or 0). E.g. %s(''%s'', 9, 1);',mfilename,mfilename,expName);
 elseif nargin >= 3
   % the correct number of arguments
@@ -227,7 +228,7 @@ if exist(cfg.files.expParamFile,'file')
   if expParam.sessionNum <= expParam.nSessions
     % make sure we want to start this session
     startUnanswered = 1;
-    if expParam.useNS
+    if useNS
       NSstr = 'with Net Station enabled';
     else
       NSstr = 'WITHOUT Net Station enabled';
@@ -288,6 +289,18 @@ else
   % Load the experiment's config file. Must create this for each experiment.
   if exist(fullfile(pwd,sprintf('config_%s.m',expParam.expName)),'file')
     [cfg,expParam] = eval(sprintf('config_%s(cfg,expParam);',expParam.expName));
+    
+    if isfield(expParam,'doNotRunSes') && expParam.doNotRunSes(expParam.sessionNum)
+      fprintf('Exiting because expParam.doNotRunSes for this sessions is true.\n');
+      % increment the session number for running the next session
+      expParam.sessionNum = expParam.sessionNum + 1;
+      
+      % save the experiment data
+      save(cfg.files.expParamFile,'cfg','expParam');
+      
+      % exit
+      return
+    end
   else
     error('Configuration file for %s experiment does not exist: %s',fullfile(pwd,sprintf('config_%s.m',expParam.expName)));
   end
@@ -403,6 +416,7 @@ try
   % the window. 'wRect' is a rectangle defining the size of the window.
   % See "help PsychRects" for help on such rectangles and useful helper
   % functions:
+  Screen('Preference', 'ConserveVRAM', 64);
   [w, wRect] = Screen('OpenWindow', screenNumber, cfg.screen.bgColor);
   
   % Hack: something's weird with fonts in Mac Matlab (only 2013b? but
@@ -624,6 +638,7 @@ try
   recogCount = 0;
   nametrainCount = 0;
   viewnameCount = 0;
+  viewCount = 0;
   compareCount = 0;
   
   prac_matchCount = 0;
@@ -635,11 +650,13 @@ try
   msCount = 0;
   distCount = 0;
   crCount = 0;
+  croCount = 0;
   
   prac_expoCount = 0;
   prac_msCount = 0;
   prac_distCount = 0;
   prac_crCount = 0;
+  prac_croCount = 0;
   
   % for each phase in this session, run the correct function
   for p = 1:length(expParam.session.(sesName).phases)
@@ -819,6 +836,40 @@ try
             [cfg,expParam] = et_naming(w,cfg,expParam,logFile,sesName,phaseName,phaseCount,b);
           end
         end
+        
+      case {'view'}
+        % Viewing task, with category response
+        viewCount = viewCount + 1;
+        phaseCount = viewCount;
+        
+        if ~isfield(expParam.session.(sesName).(phaseName)(phaseCount),'date')
+          expParam.session.(sesName).(phaseName)(phaseCount).date = [];
+        end
+        if ~isfield(expParam.session.(sesName).(phaseName)(phaseCount),'startTime')
+          expParam.session.(sesName).(phaseName)(phaseCount).startTime = [];
+        end
+        if ~isfield(expParam.session.(sesName).(phaseName)(phaseCount),'endTime')
+          expParam.session.(sesName).(phaseName)(phaseCount).endTime = [];
+        end
+        
+        % % for each view/name block
+        % for b = 1:length(cfg.stim.(sesName).(phaseName)(phaseCount).blockSpeciesOrder)
+        % % run the viewing task
+        phaseIsComplete = false;
+        % phaseProgressFile = fullfile(cfg.files.sesSaveDir,sprintf('phaseProgress_%s_%s_view_%d_b%d.mat',sesName,phaseName,phaseCount,b));
+        phaseProgressFile = fullfile(cfg.files.sesSaveDir,sprintf('phaseProgress_%s_%s_view_%d.mat',sesName,phaseName,phaseCount));
+        if exist(phaseProgressFile,'file')
+          load(phaseProgressFile);
+          if exist('phaseComplete','var') && phaseComplete
+            phaseIsComplete = true;
+          end
+        end
+        
+        if ~phaseIsComplete
+          % [cfg,expParam] = et_viewing(w,cfg,expParam,logFile,sesName,phaseName,phaseCount,b);
+          [cfg,expParam] = et_viewing(w,cfg,expParam,logFile,sesName,phaseName,phaseCount);
+        end
+        % end
         
       case{'compare'}
         % Comparison task
@@ -1052,7 +1103,7 @@ try
         end
         
         phaseIsComplete = false;
-        phaseProgressFile = fullfile(cfg.files.sesSaveDir,sprintf('phaseProgress_%s_%s_cuedRecall_%d.mat',sesName,phaseName,phaseCount));
+        phaseProgressFile = fullfile(cfg.files.sesSaveDir,sprintf('phaseProgress_%s_%s_cr_%d.mat',sesName,phaseName,phaseCount));
         if exist(phaseProgressFile,'file')
           load(phaseProgressFile);
           if exist('phaseComplete','var') && phaseComplete
@@ -1062,6 +1113,39 @@ try
         
         if ~phaseIsComplete
           [cfg,expParam] = space_cued_recall(w,cfg,expParam,logFile,sesName,phaseName,phaseCount);
+        end
+        
+      case {'cued_recall_only','prac_cued_recall_only'}
+        % Spacing cued recall task
+        if strcmp(phaseName,'cued_recall_only')
+          croCount = croCount + 1;
+          phaseCount = croCount;
+        elseif strcmp(phaseName,'prac_cued_recall_only')
+          prac_croCount = prac_croCount + 1;
+          phaseCount = prac_croCount;
+        end
+        
+        if ~isfield(expParam.session.(sesName).(phaseName)(phaseCount),'date')
+          expParam.session.(sesName).(phaseName)(phaseCount).date = [];
+        end
+        if ~isfield(expParam.session.(sesName).(phaseName)(phaseCount),'startTime')
+          expParam.session.(sesName).(phaseName)(phaseCount).startTime = [];
+        end
+        if ~isfield(expParam.session.(sesName).(phaseName)(phaseCount),'endTime')
+          expParam.session.(sesName).(phaseName)(phaseCount).endTime = [];
+        end
+        
+        phaseIsComplete = false;
+        phaseProgressFile = fullfile(cfg.files.sesSaveDir,sprintf('phaseProgress_%s_%s_cro_%d.mat',sesName,phaseName,phaseCount));
+        if exist(phaseProgressFile,'file')
+          load(phaseProgressFile);
+          if exist('phaseComplete','var') && phaseComplete
+            phaseIsComplete = true;
+          end
+        end
+        
+        if ~phaseIsComplete
+          [cfg,expParam] = space_cued_recall_only(w,cfg,expParam,logFile,sesName,phaseName,phaseCount);
         end
         
       otherwise

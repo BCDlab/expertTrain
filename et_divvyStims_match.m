@@ -1,5 +1,5 @@
-function [chosenStimsSame,chosenStimsDiff,origStims] = et_divvyStims_match(origStims,sameStims,diffStims,nSame,nDiff,rmStims_orig,rmStims_pair,shuffleFirst,maxChosen)
-%function [chosenStimsSame,chosenStimsDiff,origStims] = et_divvyStims_match(origStims,sameStims,diffStims,nSame,nDiff,rmStims_orig,rmStims_pair,shuffleFirst,maxChosen)
+function [chosenStimsSame,chosenStimsDiff,origStims] = et_divvyStims_match(origStims,sameStims,diffStims,nSame,nDiff,rmStims_orig,rmStims_pair,shuffleFirst,maxChosen,reuseStimsSameDiff)
+%function [chosenStimsSame,chosenStimsDiff,origStims] = et_divvyStims_match(origStims,sameStims,diffStims,nSame,nDiff,rmStims_orig,rmStims_pair,shuffleFirst,maxChosen,reuseStimsSameDiff)
 %
 % Description:
 %  Divide stimuli for the subordinate matching task.
@@ -35,14 +35,16 @@ function [chosenStimsSame,chosenStimsDiff,origStims] = et_divvyStims_match(origS
 %  shuffleFirst: True or false. Randomly shuffle stimuli before selecting
 %                nSame and nSiff from each species. False = select first
 %                nSame/nDiff for each species. Optional (default = true).
-%  origStims:    Original stimulus structure with the chosen stimuli
-%                removed if rmStims_orig = true.
 %  maxChosen:    Integer. Upper limit for choosing stimuli. Used in case
 %                fewer than nStims x nSpecies are needed.
+%  reuseStimsSameDiff: reuse the exact same stimuli for same and different
+%                      trials (should make sure nSame==nDiff)
 %
 % Output:
 %  chosenStimsSame: stimuli for the "same" condition.
 %  chosenStimsDiff: stimuli for the "diff" condition.
+%  origStims:       Original stimulus structure with the chosen stimuli
+%                   removed if rmStims_orig = true.
 %
 
 if ~exist('rmStims_orig','var') || isempty(rmStims_orig)
@@ -61,6 +63,10 @@ if ~exist('maxChosen','var') || isempty(maxChosen)
   maxChosen = [];
 end
 
+if ~exist('reuseStimsSameDiff','var') || isempty(reuseStimsSameDiff)
+  reuseStimsSameDiff = false;
+end
+
 if nSame == length(sameStims)
   warning('Setting rmStims_orig to false because nSame == length(sameStims). Otherwise you will run out of stimuli to divvy out.\n');
   rmStims_orig = false;
@@ -74,11 +80,19 @@ theseSameStims = [];
 [theseSameStims,origStims] = et_divvyStims(...
   origStims,theseSameStims,nSame,rmStims_orig,shuffleFirst,...
   {'same', 'matchStimNum', 'matchPairNum'},{true, 2, []},maxChosen);
-% different: other half are stim2 in "different" condition
+
 theseDiffStims = [];
-[theseDiffStims,origStims] = et_divvyStims(...
-  origStims,theseDiffStims,nDiff,rmStims_orig,shuffleFirst,...
-  {'same', 'matchStimNum', 'matchPairNum'},{false, 2, []},maxChosen);
+if reuseStimsSameDiff
+  % different: reuse the stims for stim2 in "different" condition
+  [theseDiffStims] = et_divvyStims(...
+    theseSameStims,theseDiffStims,nDiff,rmStims_orig,shuffleFirst,...
+    {'same', 'matchStimNum', 'matchPairNum'},{false, 2, []},maxChosen);
+else
+  % different: other half are stim2 in "different" condition
+  [theseDiffStims,origStims] = et_divvyStims(...
+    origStims,theseDiffStims,nDiff,rmStims_orig,shuffleFirst,...
+    {'same', 'matchStimNum', 'matchPairNum'},{false, 2, []},maxChosen);
+end
 
 % store the stimuli for slicing before modifying
 stim2_same = theseSameStims;
@@ -135,7 +149,9 @@ not_good = true;
 while not_good
   % permute until each species has a pair that is not the same number
   speciesPair = randperm(length(theseSpecies));
-  if ~any(speciesPair == theseSpecies)
+  %if ~any(speciesPair == theseSpecies)
+  if all(theseSpecies(speciesPair) ~= theseSpecies)
+    otherSpecies = theseSpecies(speciesPair);
     not_good = false;
   end
 end
@@ -143,7 +159,8 @@ for s = 1:length(theseSpecies)
   % get the stim2 for this species
   sInd_stim2 = find([stim2_diff.speciesNum] == theseSpecies(s));
   % get the corresponding (diff) stim1 indices, from the permuted pairs
-  sInd_stim1 = [stim1_diff.speciesNum] == speciesPair(theseSpecies(s));
+  %sInd_stim1 = [stim1_diff.speciesNum] == speciesPair(theseSpecies(s));
+  sInd_stim1 = [stim1_diff.speciesNum] == otherSpecies(s);
   % pull out these possible stim1s
   stim1_spec = stim1_diff(sInd_stim1);
   for e = 1:length(sInd_stim2)
@@ -153,6 +170,33 @@ for s = 1:length(theseSpecies)
       stim1_spec,theseDiffStims,1,rmStims_pair,shuffleFirst,...
       {'same', 'matchStimNum', 'matchPairNum'},{false, 1, pairCount});
     pairCount = pairCount + 1;
+  end
+end
+
+if ~isempty(sameStims) && ~isempty(theseSameStims)
+  % make sure we can concatenate
+  fn_exist = fieldnames(sameStims);
+  fn_toAdd = fieldnames(theseSameStims);
+  if any(~ismember(fn_exist,fn_toAdd))
+    newFields = fn_exist(~ismember(fn_exist,fn_toAdd));
+    for f = 1:length(newFields)
+      for i = 1:length(theseSameStims)
+        theseSameStims(i).(newFields{f}) = [];
+      end
+    end
+  end
+end
+
+if ~isempty(diffStims) && ~isempty(theseDiffStims)
+  fn_exist = fieldnames(diffStims);
+  fn_toAdd = fieldnames(theseDiffStims);
+  if any(~ismember(fn_exist,fn_toAdd))
+    newFields = fn_exist(~ismember(fn_exist,fn_toAdd));
+    for f = 1:length(newFields)
+      for i = 1:length(theseDiffStims)
+        theseDiffStims(i).(newFields{f}) = [];
+      end
+    end
   end
 end
 

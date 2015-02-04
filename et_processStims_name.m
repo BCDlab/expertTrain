@@ -3,6 +3,10 @@ function [cfg,expParam] = et_processStims_name(cfg,expParam,sesName,phaseName,ph
 
 fprintf('Configuring %s %s (%d)...\n',sesName,phaseName,phaseCount);
 
+if ~isfield(cfg.stim.(sesName).(phaseName)(phaseCount),'nameMaxConsecFamily')
+  cfg.stim.(sesName).(phaseName)(phaseCount).nameMaxConsecFamily = 0;
+end
+
 phaseCfg = cfg.stim.(sesName).(phaseName)(phaseCount);
 
 if ~isfield(phaseCfg,'familyNames')
@@ -30,6 +34,12 @@ else
     if ismember(cfg.stim.familyNames{f},phaseCfg.familyNames)
       expParam.session.(sesName).(phaseName)(phaseCount).nameStims = cat(1,...
         expParam.session.(sesName).(phaseName)(phaseCount).nameStims,expParam.session.(sprintf('f%dTrained',f)));
+      %if strcmp(expParam.expName,'FLOWVIS')
+      %  if ~expParam.isEven || (expParam.isEven && phaseCount ~= 2)
+      %    expParam.session.(sesName).(phaseName)(phaseCount).nameStims = cat(1,...
+      %      expParam.session.(sesName).(phaseName)(phaseCount).nameStims,expParam.session.(sprintf('f%dUntrained',f)));
+      %  end
+      %end
     end
   end
 end

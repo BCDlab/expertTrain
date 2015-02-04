@@ -70,6 +70,7 @@ for s = 1:expParam.nSessions
   % multiple times
   matchCount = 0;
   nameCount = 0;
+  viewCount = 0;
   recogCount = 0;
   nametrainCount = 0;
   viewnameCount = 0;
@@ -105,7 +106,17 @@ for s = 1:expParam.nSessions
         end
         
         % divide match trials in half because allStims contains stim1+stim2
-        nTrials = length(expParam.session.(sesName).(phaseName)(phaseCount).allStims) / 2;
+        if isfield(cfg.stim.(sesName).(phaseName)(phaseCount),'nBlocks') && ~isempty(cfg.stim.(sesName).(phaseName)(phaseCount).nBlocks)
+          % currently only EBUG_UMA uses blocks in match, and even then
+          % they are only using the stim setup from expertTrain to run the
+          % experiment in different software
+          nTrials = 0;
+          for b = 1:cfg.stim.(sesName).(phaseName)(phaseCount).nBlocks
+            nTrials = nTrials + length(expParam.session.(sesName).(phaseName)(phaseCount).allStims{b}) / 2;
+          end
+        else
+          nTrials = length(expParam.session.(sesName).(phaseName)(phaseCount).allStims) / 2;
+        end
         
       case {'name'}
         % Naming task
@@ -127,6 +138,18 @@ for s = 1:expParam.nSessions
         end
         
         nTrials = length(expParam.session.(sesName).(phaseName)(phaseCount).nameStims);
+        
+      case {'view'}
+        % Viewing task
+        viewCount = viewCount + 1;
+        phaseCount = viewCount;
+        
+        trialDur = ...
+          cfg.stim.(sesName).(phaseName)(phaseCount).view_isi + ...
+          mean(cfg.stim.(sesName).(phaseName)(phaseCount).view_preStim) + ...
+          cfg.stim.(sesName).(phaseName)(phaseCount).view_stim;
+        
+        nTrials = length(expParam.session.(sesName).(phaseName)(phaseCount).viewStims);
         
       case {'recog'}
         % Recognition (old/new) task
