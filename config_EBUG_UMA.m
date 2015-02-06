@@ -557,9 +557,8 @@ if expParam.sessionNum == 1
     if ismember(phaseName,expParam.session.(sesName).phases)
         
         
-        % assigns procedurally generated family names based on the number
-        % of cycles
-                
+        % hardcoded randomization of manupulations based on phaseCount
+        % grouped into sets of 4
         numberOfCycles = 4;
         phaseCount = 1;
         for distributionCycle = 1 : numberOfCycles
@@ -1695,6 +1694,8 @@ if expParam.sessionNum == 1
     
     if ismember(phaseName,expParam.session.(sesName).phases)
         
+        % hardcoded randomization of manupulations based on phaseCount
+        % grouped into sets of 4
         numberOfCycles = 4;
         phaseCount = 1;
         for distributionCycle = 1 : numberOfCycles
@@ -1989,7 +1990,7 @@ if expParam.sessionNum == 1
     end
   end % ismember
   
-  %% pretest EEG configuration
+  %% posttest EEG configuration
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   sesName = 'posttest_eeg';
