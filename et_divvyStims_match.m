@@ -119,12 +119,14 @@ for s = 1:length(theseSpecies)
   stim1_spec = stim1_same(sInd_stim1);
   
   not_good = true;
-  while not_good
+  loopCount = 0;
+  while not_good && loopCount < 10000
     % permute until each exemplar has a pair that is not the same number
     exemplarPair = randperm(length(sInd_stim2));
     if ~any([stim1_spec(exemplarPair).exemplarNum] == [theseSameStims(sInd_stim2).exemplarNum])
       not_good = false;
     end
+    loopCount = loopCount + 1;
   end
   % put them in the new order
   stim1_spec = stim1_spec(exemplarPair);

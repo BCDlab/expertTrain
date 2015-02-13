@@ -557,8 +557,9 @@ if expParam.sessionNum == 1
     if ismember(phaseName,expParam.session.(sesName).phases)
         
         
-        % hardcoded randomization of manupulations based on phaseCount
-        % grouped into sets of 4
+        % assigns procedurally generated family names based on the number
+        % of cycles
+                
         numberOfCycles = 4;
         phaseCount = 1;
         for distributionCycle = 1 : numberOfCycles
@@ -706,7 +707,7 @@ if expParam.sessionNum == 1
 %         cfg.stim.(sesName).(phaseName)(phaseCount).familyNames = cfg.stim.familyNames;
         
         % hack
-        cfg.stim.(sesName).(phaseName)(phaseCount).refillFamiliesIfEmpty = true;
+        cfg.stim.(sesName).(phaseName)(phaseCount).refillFamiliesIfEmpty = false;
         
         if phaseCount == 1 || phaseCount == 3 || phaseCount == 4 || phaseCount == 6 || phaseCount == 7 || phaseCount == 9 || phaseCount == 10 || phaseCount == 12 || phaseCount == 2 || phaseCount == 5 || phaseCount == 8 || phaseCount == 11 || phaseCount == 13 || phaseCount == 14 || phaseCount == 15 || phaseCount == 16
           % 360 trials per phase (for eyetracking matching and moving
@@ -733,14 +734,14 @@ if expParam.sessionNum == 1
 %           cfg.stim.(sesName).(phaseName)(phaseCount).nDiffNew = cfg.stim.nNewExemplars / 2;
 
           % number per species per family
-          cfg.stim.(sesName).(phaseName)(phaseCount).nSame = 4;
-          cfg.stim.(sesName).(phaseName)(phaseCount).nDiff = 4;
+          cfg.stim.(sesName).(phaseName)(phaseCount).nSame = 1;
+          cfg.stim.(sesName).(phaseName)(phaseCount).nDiff = 1;
           % rmStims_orig is true because we do not want the same stimuli in
           % "same" cond and "diff" cond
           cfg.stim.(sesName).(phaseName)(phaseCount).rmStims_orig = false;
           
-          cfg.stim.(sesName).(phaseName)(phaseCount).nSameNew = 4;
-          cfg.stim.(sesName).(phaseName)(phaseCount).nDiffNew = 4;
+          cfg.stim.(sesName).(phaseName)(phaseCount).nSameNew = 1;
+          cfg.stim.(sesName).(phaseName)(phaseCount).nDiffNew = 1;
 
           % % this is how to force all stimuli to be both stim1 and stim2
           % % in "same" and "diff" conds
@@ -1694,8 +1695,6 @@ if expParam.sessionNum == 1
     
     if ismember(phaseName,expParam.session.(sesName).phases)
         
-        % hardcoded randomization of manupulations based on phaseCount
-        % grouped into sets of 4
         numberOfCycles = 4;
         phaseCount = 1;
         for distributionCycle = 1 : numberOfCycles
@@ -1887,11 +1886,11 @@ if expParam.sessionNum == 1
           % cfg.stim.(sesName).(phaseName)(phaseCount).reuseStimsSameDiff = true;
           
           % number per species per family
-          cfg.stim.(sesName).(phaseName)(phaseCount).nSame = 4;
-          cfg.stim.(sesName).(phaseName)(phaseCount).nDiff = 4;
+          cfg.stim.(sesName).(phaseName)(phaseCount).nSame = 1;
+          cfg.stim.(sesName).(phaseName)(phaseCount).nDiff = 1;
           
-          cfg.stim.(sesName).(phaseName)(phaseCount).nSameNew = 4;
-          cfg.stim.(sesName).(phaseName)(phaseCount).nDiffNew = 4;
+          cfg.stim.(sesName).(phaseName)(phaseCount).nSameNew = 1;
+          cfg.stim.(sesName).(phaseName)(phaseCount).nDiffNew = 1;
           
           % rmStims_orig is true because we do not want the same stimuli in
           % "same" cond and "diff" cond
@@ -1990,7 +1989,7 @@ if expParam.sessionNum == 1
     end
   end % ismember
   
-  %% posttest EEG configuration
+  %% pretest EEG configuration
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   sesName = 'posttest_eeg';
