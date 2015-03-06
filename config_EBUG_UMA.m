@@ -1989,7 +1989,7 @@ if expParam.sessionNum == 1
     end
   end % ismember
   
-  %% pretest EEG configuration
+  %% posttest EEG configuration
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   sesName = 'posttest_eeg';
@@ -2070,7 +2070,7 @@ if expParam.sessionNum == 1
         
         % only used if running Net Station, but need to set unconditionally
         % because session 1 doesn't use NS
-        cfg.stim.(sesName).(phaseName)(phaseCount).impedanceAfter_nTrials = 240;
+        cfg.stim.(sesName).(phaseName)(phaseCount).impedanceAfter_nTrials = 180;
         
         % durations, in seconds
         cfg.stim.(sesName).(phaseName)(phaseCount).match_isi = 0.0;
