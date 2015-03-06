@@ -118,6 +118,8 @@ for s = 1:length(theseSpecies)
   % pull out these possible stim1s
   stim1_spec = stim1_same(sInd_stim1);
   
+  % for some reason this was being thrown into an infinite loop
+  % so I put a counter to break it after 10000 iterations -JIM
   not_good = true;
   loopCount = 0;
   while not_good && loopCount < 10000
