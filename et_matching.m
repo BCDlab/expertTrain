@@ -450,6 +450,7 @@ end
 % impedenceAfterN = 180;
 
 
+
 for i = trialNum:length(stim2)
   % do an impedance check after a certain number of trials
   if ~expParam.photoCellTest && expParam.useNS && phaseCfg.isExp && i > 1 && i < length(stim2) && mod((i - 1),phaseCfg.impedanceAfter_nTrials) == 0
