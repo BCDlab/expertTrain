@@ -447,13 +447,14 @@ if phaseCfg.isExp && cfg.stim.secUntilBlinkBreak > 0
   blinkTimerStart = GetSecs;
 end
 
-% impedenceAfterN = 180;
 
-
+% hard code the number of trials before an impedence break
+% this is a hack to avoid a null value exception that was being thrown in the posttest_eeg
+impedenceAfterN = 180;
 
 for i = trialNum:length(stim2)
   % do an impedance check after a certain number of trials
-  if ~expParam.photoCellTest && expParam.useNS && phaseCfg.isExp && i > 1 && i < length(stim2) && mod((i - 1),phaseCfg.impedanceAfter_nTrials) == 0
+  if ~expParam.photoCellTest && expParam.useNS && phaseCfg.isExp && i > 1 && i < length(stim2) && mod((i - 1),impedanceAfterN) == 0
     % run the impedance break
     thisGetSecs = GetSecs;
     fprintf(logFile,'%f\t%s\t%s\t%s\t%d\t%d\t%s\n',thisGetSecs,expParam.subject,sesName,phaseName,phaseCount,phaseCfg.isExp,'IMPEDANCE_START');
